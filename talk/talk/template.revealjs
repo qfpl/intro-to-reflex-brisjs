@@ -37,7 +37,6 @@ $endfor$
 <link rel="stylesheet" href="css/tweak.css">
 <link rel="stylesheet" href="$codedir$/css/grid-dark.css">
 <link rel="stylesheet" href="$codedir$/css/fizzbuzz.css">
-<link rel="stylesheet" href="$codedir$/css/switch.css">
 <link rel="stylesheet" href="$codedir$/css/todo.css">
   <script language="javascript" src="$codedir$/js/examples.min.js"></script>
   <!-- Printing and PDF exports -->

@@ -9,8 +9,10 @@ module Examples.Events (
 import Data.Monoid ((<>))
 
 import Control.Lens
+import Control.Monad.Trans (liftIO)
 
 import Data.Text (Text)
+import Data.Time (getCurrentTime)
 
 import Reflex.Dom.Core
 import GHCJS.DOM.Types (MonadJSM(..))
@@ -43,6 +45,9 @@ attachEventExamples = do
   attachId_ "examples-events-either"
     demoEither
 
+  attachId_ "examples-events-tick"
+    demoTick
+
   attachFizzBuzzExamples
 
 flipper :: Reflex t
@@ -60,7 +65,7 @@ blue :: Reflex t
      -> Event t Colour
 blue eInput =
   let
-    eOutput = 
+    eOutput =
       Blue <$ eInput
   in
     eOutput
@@ -241,4 +246,49 @@ demoEither = divClass "panel panel-default" . divClass "panel-body" $ mdo
     eReset <- buttonClass "btn btn-default pull-right" "Reset"
     return (eInput, eReset)
   return ()
+
+demoTick ::
+  MonadWidget t m =>
+  m ()
+demoTick = divClass "panel panel-default" . divClass "panel-body" $ mdo
+  let
+    wInitial = Workflow $ do
+      eNext <- button "Start"
+      pure ((), wRunning <$ eNext)
+    wRunning = Workflow $ do
+      eStop <- demoTick'
+      pure ((), wInitial <$ eStop)
+
+  _ <- workflow wInitial
+  pure ()
+
+demoTick' ::
+  MonadWidget t m =>
+  m (Event t ())
+demoTick' = mdo
+  dClick <- foldDyn (:) [] .
+            leftmost $ [
+                Just <$> eClick
+              , Nothing <$ eTick
+              ]
+
+  dTick <- foldDyn (:) [] .
+           leftmost $ [
+               Just <$> eTick
+             , Nothing <$ eClick
+             ]
+
+  drawGrid defaultGridConfig
+    [ Row "eClick" 1 dClick
+    , Row "eTick" 3 dTick
+    ]
+
+  (eClick, eTick, eReset) <- el "div" $ do
+    eClick' <- buttonClass "btn btn-default pull-right" "Click"
+    now <- liftIO getCurrentTime
+    eTick' <- tickLossy 2 now
+    eReset' <- buttonClass "btn btn-default pull-right" "Reset"
+    return (Blue <$ eClick', Red <$ eTick', eReset')
+
+  return eReset
 

@@ -31,7 +31,7 @@ attachId eid w =
 attachId_ ::
   MonadJSM  m =>
   T.Text ->
-  (forall x. Widget x ()) ->
+  (forall x. Widget x a) ->
   m ()
 attachId_ eid w = do
   _ <- attachId eid w

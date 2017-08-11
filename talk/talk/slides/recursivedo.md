@@ -200,20 +200,3 @@ counter dLimit eAdd eClear = mdo
 ```
 
 <div id="examples-recursiveDo-2"></div>
-
-##
-
-```haskell
-limit :: (Reflex t, MonadFix m, MonadHold t m) 
-        => Event t ()
-        -> Event t ()
-        -> m (Dynamic t Int)
-limit eAdd eClear =
-  foldDyn ($) 0 . mergeWith (.) $ [
-      (+ 1)   <$ eAdd
-    , const 0 <$ eClear
-    ]
-```
-
-<div id="examples-recursiveDo-1"></div>
-

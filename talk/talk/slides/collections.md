@@ -3,10 +3,6 @@
 
 ##
 
-<div class="demo" id="examples-list-item"></div>
-
-##
-
 ```haskell
 addItemWidget :: MonadWidget t m 
               => m (Event t Text)

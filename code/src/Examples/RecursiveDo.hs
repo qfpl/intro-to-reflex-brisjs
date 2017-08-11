@@ -13,6 +13,8 @@ module Examples.RecursiveDo (
   , counterExample1
   ) where
 
+import Data.Maybe (fromMaybe)
+
 import Control.Monad.Fix (MonadFix)
 
 import Reflex.Dom.Core
@@ -24,15 +26,15 @@ attachRecursiveDoExamples ::
   MonadJSM m =>
   m ()
 attachRecursiveDoExamples = do
-  attachId_ "examples-recursiveDo-1"
+  mdCount1 <- attachId "examples-recursiveDo-1"
     counterExample1
-  attachId_ "examples-recursiveDo-2"
-    counterExample2
+  attachId_ "examples-recursiveDo-2" $
+    counterExample2 $ fromMaybe (pure 5) mdCount1
 
 mkCounter ::
   MonadWidget t m =>
   (Event t () -> Event t () -> m (Dynamic t Int)) ->
-  m ()
+  m (Dynamic t Int)
 mkCounter network = mdo
   el "div" $
     display dCount
@@ -42,7 +44,7 @@ mkCounter network = mdo
 
   dCount <- network eAdd eClear
 
-  pure ()
+  pure dCount
 
 counter1 ::
   ( Reflex t
@@ -61,7 +63,7 @@ counter1 eAdd eClear =
 
 counterExample1 ::
   MonadWidget t m =>
-  m ()
+  m (Dynamic t Int)
 counterExample1 =
   mkCounter counter1
 
@@ -87,6 +89,7 @@ counter2 dLimit eAdd eClear = mdo
 
 counterExample2 ::
   MonadWidget t m =>
-  m ()
-counterExample2 =
-  mkCounter $ counter2 (pure 5)
+  Dynamic t Int ->
+  m (Dynamic t Int)
+counterExample2 dLimit =
+  mkCounter $ counter2 dLimit

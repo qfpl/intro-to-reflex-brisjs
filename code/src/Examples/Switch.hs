@@ -8,14 +8,14 @@ Portability : non-portable
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RecursiveDo #-}
-{-# LANGUAGE TemplateHaskell #-}
 module Examples.Switch (
     attachSwitchExamples
   ) where
 
-import Control.Monad (void)
-
 import Control.Lens
+
+import Control.Monad.Trans (liftIO)
+import Data.Time (getCurrentTime)
 
 import Data.Text (Text)
 import qualified Data.Text as Text
@@ -35,16 +35,16 @@ attachSwitchExamples = do
     switchColourExample switchColour1
   attachId_ "examples-switch-colour-2" $
     switchColourExample switchColour2
-  attachId_ "examples-switch-widget-hide"
-    widgetHideExample
-  attachId_ "examples-switch-widget-hold"
-    widgetHoldExample
-  attachId_ "examples-switch-dyn"
-    dynExample
-  attachId_ "examples-switch-workflow-1"
-    workflowExample1
-  attachId_ "examples-switch-workflow-2"
-    workflowExample2
+
+  attachId_ "examples-switch-hide-button" $
+    hideExample buttonWidget
+  attachId_ "examples-switch-hold-button" $
+    holdExample buttonWidget
+
+  attachId_ "examples-switch-hide-tick" $
+    hideExample tickWidget
+  attachId_ "examples-switch-hold-tick" $
+    holdExample tickWidget
 
 switchColour1 ::
   ( Reflex t
@@ -119,159 +119,93 @@ switchColourExample guest = el "div" $ mdo
 
   pure ()
 
-w1 ::
+textWidget ::
   MonadWidget t m =>
   m (Event t Text)
-w1 = do
-  eClick <- button "OK"
-  pure $ "OK" <$ eClick
-
-w2 ::
-  MonadWidget t m =>
-  m (Event t Text)
-w2 = do
+textWidget = do
   ti <- textInput def
   pure $ ti ^. textInput_input
 
-widgetHideExample ::
+buttonWidget ::
   MonadWidget t m =>
+  m (Event t Text)
+buttonWidget = do
+  eClick <- button "OK"
+  pure $ "OK" <$ eClick
+
+tickWidget ::
+  MonadWidget t m =>
+  m (Event t Text)
+tickWidget = do
+  now <- liftIO getCurrentTime
+  eTick <- tickLossy 1 now
+  el "div" $ text "Ticking..."
+  pure $ (Text.pack . show . _tickInfo_n) <$> eTick
+
+hideExample ::
+  MonadWidget t m =>
+  m (Event t Text) ->
   m ()
-widgetHideExample = elClass "div" "widget-hold-wrapper" $ do
+hideExample w = elClass "div" "widget-hold-wrapper" $ mdo
+  let
+    mkHidden False = "hide"
+    mkHidden True  = ""
+
+    dHide1 = mkHidden         <$> dToggle
+    dHide2 = (mkHidden . not) <$> dToggle
+
+  eText1 <- elDynClass "div" dHide1 textWidget
+  eText2 <- elDynClass "div" dHide2 w
+
   eSwitch <- el "div" $
     button "Switch"
-
-  dCount <- count eSwitch
-  let
-    eEven = fmap even dCount
-    eOdd =  fmap odd dCount
+  dToggle <- toggle True eSwitch
 
   let
-    mkHidden False  = "hide"
-    mkHidden True = ""
+    bToggle = current  dToggle
 
-  eText1 <- elDynClass "div" (mkHidden <$> eEven)
-    w1
-  eText2 <- elDynClass "div" (mkHidden <$> eOdd)
-    w2
+    bShow1  =          bToggle
+    bShow2  = fmap not bToggle
 
-  let
-    eText = leftmost [eText1, eText2]
+    eText = leftmost [
+                gate bShow1 eText1
+              , gate bShow2 eText2
+              , "" <$ eSwitch
+              ]
 
   dText <- holdDyn "" eText
-  el "div"$
+  el "div" $
     dynText dText
 
   pure ()
 
-widgetHoldExample ::
+holdExample ::
   MonadWidget t m =>
+  m (Event t Text) ->
   m ()
-widgetHoldExample = elClass "div" "widget-hold-wrapper" $ do
-  eSwitch <- el "div" $
-    button "Switch"
-
-  dCount <- count eSwitch
+holdExample w = elClass "div" "widget-hold-wrapper" $ mdo
   let
-    eEven = ffilter even . updated $ dCount
-    eOdd =  ffilter odd . updated $ dCount
+    eToggle = updated     dToggle
+    eShow1  = ffilter id  eToggle
+    eShow2  = ffilter not eToggle
 
-  deText <- widgetHold w1 . leftmost $ [
-      w1 <$ eEven
-    , w2 <$ eOdd
+  deText <- widgetHold textWidget . leftmost $ [
+      textWidget <$ eShow1
+    , w          <$ eShow2
     ]
 
-  let
-    eText = switch . current $ deText
-
-  dText <- holdDyn "" eText
-  el "div"$
-    dynText dText
-
-  pure ()
-
-dynExample ::
-  MonadWidget t m =>
-  m ()
-dynExample = elClass "div" "widget-hold-wrapper" $ do
   eSwitch <- el "div" $
     button "Switch"
+  dToggle <- toggle True eSwitch
 
-  dCount <- count eSwitch
   let
-    eEven = ffilter even . updated $ dCount
-    eOdd =  ffilter odd . updated $ dCount
+    eText  = switch (current deText)
+    eClear = "" <$ eSwitch
 
-  dWidget <- holdDyn w1 . leftmost $ [
-      w1 <$ eEven
-    , w2 <$ eOdd
-    ]
+  dText <- holdDyn "" . leftmost $ [eText , eClear]
 
-  eeText <- dyn dWidget
-  eText <- switchPromptly never eeText
-
-  dText <- holdDyn "" eText
   el "div"$
     dynText dText
 
-  pure ()
-
-workflowExample1 ::
-  forall t m.
-  MonadWidget t m =>
-  m ()
-workflowExample1 = elClass "div" "widget-hold-wrapper" $ do
-  eSwitch <- el "div" $
-    button "Switch"
-
-  let
-    wf1 :: Workflow t m (Event t Text)
-    wf1 = Workflow $ do
-      eText1 <- w1
-      pure (eText1, wf2 <$ eSwitch)
-
-    wf2 :: Workflow t m (Event t Text)
-    wf2 = Workflow $ do
-      eText2 <- w2
-      pure (eText2, wf1 <$ eSwitch)
-
-  deText <- workflow wf1
-
-  let
-    eText = switch . current $ deText
-
-  dText <- holdDyn "" eText
-  el "div"$
-    dynText dText
 
   pure ()
-
-workflowExample2 ::
-  forall t m.
-  MonadWidget t m =>
-  m ()
-workflowExample2 = elClass "div" "widget-hold-wrapper" $ do
-
-  let
-    wf1 :: Workflow t m (Event t Text)
-    wf1 = Workflow $ do
-      eSwitch <- el "div" $ button "On to page 2"
-      eText <- w1
-      pure (eText, wf2 <$ eSwitch)
-
-    wf2 :: Workflow t m (Event t Text)
-    wf2 = Workflow $ do
-      eSwitch <- el "div" $ button "Back to page 1"
-      eText <- w2
-      pure (eText, wf1 <$ eSwitch)
-
-  deText <- workflow wf1
-
-  let
-    eText = switch . current $ deText
-
-  dText <- holdDyn "" eText
-  el "div"$
-    dynText dText
-
-  pure ()
-

@@ -1,23 +1,23 @@
-{ nixpkgsOld ? import <nixpkgs> {}
-, compiler   ? "ghcjs"
+{ compiler   ? "ghcjs"
 } :
 let
-  reflex-platform = import (nixpkgsOld.pkgs.fetchFromGitHub {
-    owner = "reflex-frp";
-    repo = "reflex-platform";
-    rev = "b7c00b3574d0ef42974eda0f2812c794c7b5d4f3";
-    sha256 = "1jfz17y2fq051caby4y4aslxrpvgwwa30ivfw0l5wn5pp5zlrpad";
-  }) {} ;
+  initialNixpkgs = import <nixpkgs> {};
 
-  nixpkgs = reflex-platform.nixpkgs;
-  pkgs = nixpkgs.pkgs;
+  sources = {
+    reflex-platform = initialNixpkgs.pkgs.fetchFromGitHub {
+      owner = "reflex-frp";
+      repo = "reflex-platform";
+      rev = "b7c00b3574d0ef42974eda0f2812c794c7b5d4f3";
+      sha256 = "1jfz17y2fq051caby4y4aslxrpvgwwa30ivfw0l5wn5pp5zlrpad";
+    };
+  };
 
-  fixUp = if compiler == "ghcjs" then pkgs.haskell.lib.dontHaddock else nixpkgs.lib.trivial.id;
+  reflex-platform = import sources.reflex-platform {};
+  pkgs = reflex-platform.nixpkgs.pkgs;
 
-  reflex-materials-code-base = fixUp (reflex-platform.${compiler}.callPackage ./examples.nix {});
-
-  reflex-materials-code = pkgs.haskell.lib.overrideCabal reflex-materials-code-base (drv: {
+  adjust-for-ghcjs = drv: {
     executableToolDepends = [pkgs.closurecompiler pkgs.zopfli];
+    doHaddock = false;
     postInstall = ''
       mkdir -p $out
 
@@ -39,6 +39,28 @@ let
       rm -Rf $out/nix-support
       rm -Rf $out/share
     '';
-  });
+  };
+
+  adjust-for-ghc = drv: {
+    executableSystemDepends = [
+      reflex-platform.${compiler}.ghcid
+      (pkgs.callPackage (import ./tools/nix-tags-haskell) {})
+    ];
+  };
+
+  adjust =
+    if compiler == "ghcjs"
+    then adjust-for-ghcjs
+    else adjust-for-ghc;
+
+  haskellPackages = reflex-platform.${compiler}.override {
+    overrides = (self: super: {
+      ghc = super.ghc // { withPackages = super.ghc.withHoogle; };
+      ghcWithPackages = self.ghc.withPackages;
+    });
+  };
+
+  reflex-materials-code-base = haskellPackages.callPackage ./examples.nix {};
+  reflex-materials-code = pkgs.haskell.lib.overrideCabal reflex-materials-code-base adjust;
 in
   reflex-materials-code

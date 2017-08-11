@@ -22,6 +22,10 @@ library
                      , Examples.Dom
                      , Examples.Switch
                      , Examples.Collection
+                     , Examples.List
+                     , Examples.List.TextField
+                     , Examples.List.Add
+                     , Examples.List.Edit
                      , Examples.Todo
                      , Colour
                      , Util.Attach

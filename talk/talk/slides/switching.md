@@ -3,22 +3,6 @@
 
 ##
 
-<div class="demo" id="examples-switch-hide-button"></div>
-
-##
-
-<div class="demo" id="examples-switch-hold-button"></div>
-
-##
-
-<div class="demo" id="examples-switch-hide-tick"></div>
-
-##
-
-<div class="demo" id="examples-switch-hold-tick"></div>
-
-##
-
 <div class="demo" id="examples-switch-colour-1"></div>
 
 ##
@@ -543,10 +527,6 @@ switchColour eSwitch1 eSwitch2 eInput = do
 
   pure (switch eOut1, switch eOut2)
 ```
-
-##
-
-<div class="demo" id="examples-switch-colour-2"></div>
 
 ## 
 
