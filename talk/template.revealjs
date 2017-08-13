@@ -39,6 +39,7 @@ $endfor$
 <link rel="stylesheet" href="$codedir$/css/fizzbuzz.css">
 <link rel="stylesheet" href="$codedir$/css/switch.css">
 <link rel="stylesheet" href="$codedir$/css/todo.css">
+  <script language="javascript" src="$codedir$/js/rx.all.min.js"></script>
   <script language="javascript" src="$codedir$/js/examples.min.js"></script>
   <!-- Printing and PDF exports -->
   <script>
@@ -244,6 +245,7 @@ $endif$
         ]
       });
     </script>
+    <script language="javascript" src="$codedir$/js/rx-example.js"></script>
   $for(include-after)$
   $include-after$
   $endfor$

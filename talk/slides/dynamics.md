@@ -4,7 +4,7 @@
 ##
 
 ```haskell
-data Dynamic t a
+data Dynamic a
 
 
 
@@ -14,28 +14,30 @@ data Dynamic t a
 ##
 
 ```haskell
-data Dynamic t a
+data Dynamic a
 
   ~ 
 
-(Event t a, Behavior t a) 
+(Event a, Behavior a) 
 ```
 
 ##
 
 ```haskell
-updated :: Reflex t 
-        => Dynamic t a 
-        -> Event t a
+updated :: Dynamic a 
+        -> Event a
 ```
 
 ## 
 
 ```haskell
-current :: Reflex t 
-        => Dynamic t a 
-        -> Behavior t a
+current :: Dynamic a 
+        -> Behavior a
 ```
+
+##
+
+This is what lets `reflex` catch up to the virtual DOM
 
 <!--
 ##
@@ -62,60 +64,60 @@ We construct `Dynamic`s directly rather than combining `Event`s and `Behavior`s 
 ##
 
 ```haskell
-hold        :: (Reflex t, MonadHold t m) 
+hold        :: ReflexM m
             => 
                a 
-            -> Event t a 
-            -> m (Behavior t a)
+            -> Event a 
+            -> m (Behavior a)
 ```
 
 ##
 
 ```haskell
-holdDyn     :: (Reflex t, MonadHold t m) 
+holdDyn     :: ReflexM m
             => 
                a 
-            -> Event t a 
-            -> m (Dynamic  t a)
+            -> Event a 
+            -> m (Dynamic  a)
 ```
 
 ##
 
 ```haskell
-foldDyn     :: (Reflex t, MonadHold t m, MonadFix m) 
+foldDyn     :: ReflexM m
             => (a -> b -> b) 
             -> b 
-            -> Event t a 
-            -> m (Dynamic  t b)
+            -> Event a 
+            -> m (Dynamic  b)
 ```
 
 ##
 
 ```haskell
-foldDyn ($) :: (Reflex t, MonadHold t m, MonadFix m) 
+foldDyn ($) :: ReflexM m
             => (a -> b -> b) 
             -> b 
-            -> Event t a 
-            -> m (Dynamic  t b)
+            -> Event a 
+            -> m (Dynamic  b)
 ```
 
 ##
 
 ```haskell
-foldDyn ($) :: (Reflex t, MonadHold t m, MonadFix m) 
+foldDyn ($) :: ReflexM m
             => 
                c 
-            -> Event t (c -> c)
-            -> m (Dynamic  t c)
+            -> Event (c -> c)
+            -> m (Dynamic  c)
 ```
 
 ##
 
 ```haskell
-counter :: (Reflex t, MonadHold t m, MonadFix m) 
+counter :: ReflexM m
         =>
 
-           m (Dynamic t Int)
+           m (Dynamic Int)
 counter             =
 
 
@@ -126,10 +128,10 @@ counter             =
 ##
 
 ```haskell
-counter :: (Reflex t, MonadHold t m, MonadFix m) 
-        => Event t ()
+counter :: ReflexM m
+        => Event ()
 
-        -> m (Dynamic t Int)
+        -> m (Dynamic Int)
 counter             =
 
 
@@ -140,10 +142,10 @@ counter             =
 ##
 
 ```haskell
-counter :: (Reflex t, MonadHold t m, MonadFix m) 
-        => Event t ()
+counter :: ReflexM m
+        => Event ()
 
-        -> m (Dynamic t Int)
+        -> m (Dynamic Int)
 counter eAdd        =
 
 
@@ -154,10 +156,10 @@ counter eAdd        =
 ##
 
 ```haskell
-counter :: (Reflex t, MonadHold t m, MonadFix m) 
-        => Event t ()
+counter :: ReflexM m
+        => Event ()
 
-        -> m (Dynamic t Int)
+        -> m (Dynamic Int)
 counter eAdd        =
   foldDyn ($) 0
   
@@ -168,10 +170,10 @@ counter eAdd        =
 ##
 
 ```haskell
-counter :: (Reflex t, MonadHold t m, MonadFix m) 
-        => Event t ()
+counter :: ReflexM m
+        => Event ()
 
-        -> m (Dynamic t Int)
+        -> m (Dynamic Int)
 counter eAdd        =
   foldDyn ($) 0                 $
       (+ 1)   <$ eAdd
@@ -182,10 +184,10 @@ counter eAdd        =
 ##
 
 ```haskell
-counter :: (Reflex t, MonadHold t m, MonadFix m) 
-        => Event t ()
-        -> Event t ()
-        -> m (Dynamic t Int)
+counter :: ReflexM m
+        => Event ()
+        -> Event ()
+        -> m (Dynamic Int)
 counter eAdd        =
   foldDyn ($) 0                 $
       (+ 1)   <$ eAdd
@@ -196,10 +198,10 @@ counter eAdd        =
 ##
 
 ```haskell
-counter :: (Reflex t, MonadHold t m, MonadFix m) 
-        => Event t ()
-        -> Event t ()
-        -> m (Dynamic t Int)
+counter :: ReflexM m
+        => Event ()
+        -> Event ()
+        -> m (Dynamic Int)
 counter eAdd eClear =
   foldDyn ($) 0                 $
       (+ 1)   <$ eAdd
@@ -210,10 +212,10 @@ counter eAdd eClear =
 ##
 
 ```haskell
-counter :: (Reflex t, MonadHold t m, MonadFix m) 
-        => Event t ()
-        -> Event t ()
-        -> m (Dynamic t Int)
+counter :: ReflexM m
+        => Event ()
+        -> Event ()
+        -> m (Dynamic Int)
 counter eAdd eClear =
   foldDyn ($) 0 . mergeWith (.) $ [
       (+ 1)   <$ eAdd
@@ -224,10 +226,10 @@ counter eAdd eClear =
 ##
 
 ```haskell
-counter :: (Reflex t, MonadHold t m, MonadFix m) 
-        => Event t ()
-        -> Event t ()
-        -> m (Dynamic t Int)
+counter :: ReflexM m
+        => Event ()
+        -> Event ()
+        -> m (Dynamic Int)
 counter eAdd eClear =
   foldDyn ($) 0 . mergeWith (.) $ [
       (+ 1)   <$ eAdd
@@ -238,10 +240,10 @@ counter eAdd eClear =
 ##
 
 ```haskell
-counter :: (Reflex t, MonadHold t m, MonadFix m) 
-        => Event t ()
-        -> Event t ()
-        -> m (Dynamic t Int)
+counter :: ReflexM m
+        => Event ()
+        -> Event ()
+        -> m (Dynamic Int)
 counter eAdd eClear =
   foldDyn ($) 0 . mergeWith (.) $ [
       (+ 1)   <$ eAdd
@@ -253,270 +255,335 @@ counter eAdd eClear =
 
 ##
 
-```haskell
-instance Reflex t => 
-         Functor (Dynamic t) where ...
-instance Reflex t => 
-         Applicative (Dynamic t) where ...
-instance Reflex t => 
-         Monad (Dynamic t) where ...
-```
-
-##
-
-```haskell
-samplePair :: (Reflex t, MonadHold t m) 
-           => Event t Colour
-           -> Event t Colour
-           -> Event t ()
-           -> m (Event    t (Colour, Colour))
-samplePair eInput1 eInput2 eSample = do
-  bColour1 <- hold    Blue eInput1
-  bColour2 <- hold    Blue eInput2
-  let bPair = (,) <$> bColour1 <*> bColour2
-  pure $ tag bPair eSample
-```
-
-##
-
-```haskell
-samplePair :: (Reflex t, MonadHold t m) 
-           => Event t Colour
-           -> Event t Colour
-
-           -> m (Event    t (Colour, Colour))
-samplePair eInput1 eInput2         = do
-  bColour1 <- hold    Blue eInput1
-  bColour2 <- hold    Blue eInput2
-  let bPair = (,) <$> bColour1 <*> bColour2
-  pure $ tag bPair eSample
-```
-
-##
-
-```haskell
-samplePair :: (Reflex t, MonadHold t m) 
-           => Event t Colour
-           -> Event t Colour
-
-           -> m (Event    t (Colour, Colour))
-samplePair eInput1 eInput2         = do
-  bColour1 <- hold    Blue eInput1
-  bColour2 <- hold    Blue eInput2
-  let bPair = (,) <$> bColour1 <*> bColour2
- 
-```
-
-##
-
-```haskell
-samplePair :: (Reflex t, MonadHold t m) 
-           => Event t Colour
-           -> Event t Colour
-
-           -> m (Event    t (Colour, Colour))
-samplePair eInput1 eInput2         = do
-  bColour1 <- hold    Blue eInput1
-  bColour2 <- hold    Blue eInput2
-  pure $      (,) <$> bColour1 <*> bColour2
- 
-```
-
-##
-
-```haskell
-samplePair :: (Reflex t, MonadHold t m) 
-           => Event t Colour
-           -> Event t Colour
-
-           -> m (Behavior t (Colour, Colour))
-samplePair eInput1 eInput2         = do
-  bColour1 <- hold    Blue eInput1
-  bColour2 <- hold    Blue eInput2
-  pure $      (,) <$> bColour1 <*> bColour2
- 
-```
-
-##
-
-```haskell
-samplePair :: (Reflex t, MonadHold t m) 
-           => Event t Colour
-           -> Event t Colour
-
-           -> m (Behavior t (Colour, Colour))
-samplePair eInput1 eInput2         = do
-  dColour1 <- holdDyn Blue eInput1
-  bColour2 <- hold    Blue eInput2
-  pure $      (,) <$> bColour1 <*> bColour2
- 
-```
-
-##
-
-```haskell
-samplePair :: (Reflex t, MonadHold t m) 
-           => Event t Colour
-           -> Event t Colour
-
-           -> m (Behavior t (Colour, Colour))
-samplePair eInput1 eInput2         = do
-  dColour1 <- holdDyn Blue eInput1
-  dColour2 <- holdDyn Blue eInput2
-  pure $      (,) <$> bColour1 <*> bColour2
- 
-```
-
-##
-
-```haskell
-samplePair :: (Reflex t, MonadHold t m) 
-           => Event t Colour
-           -> Event t Colour
-
-           -> m (Behavior t (Colour, Colour))
-samplePair eInput1 eInput2         = do
-  dColour1 <- holdDyn Blue eInput1
-  dColour2 <- holdDyn Blue eInput2
-  pure $      (,) <$> dColour1 <*> dColour2
- 
-```
-
-##
-
-```haskell
-samplePair :: (Reflex t, MonadHold t m) 
-           => Event t Colour
-           -> Event t Colour
-
-           -> m (Dynamic  t (Colour, Colour))
-samplePair eInput1 eInput2         = do
-  dColour1 <- holdDyn Blue eInput1
-  dColour2 <- holdDyn Blue eInput2
-  pure $      (,) <$> dColour1 <*> dColour2
- 
-```
-
-##
-
-```haskell
-splitPair :: Reflex t 
-          => Dynamic t (Colour, Colour)
-          -> (Dynamic t Colour, Dynamic t Colour)
-splitPair dPair =
-  let
-    p1 = fmap fst dPair
-    p2 = fmap snd dPair
-  in
-    (p1, p2)
-```
-
-##
-
-<!--There are also tools available for deconstructing them:
-
-##
-
-It can be helpful to use this while pulling things apart:-->
-```haskell
-holdUniqDyn :: (Reflex t, MonadHold t m, MonadFix m, Eq a) 
-            => Dynamic t a 
-            -> m (Dynamic t a)
-```
-
 <!--
-. . .
 
-It removes `Event` firings when the value hasn't changed.
+`Behavior`s are specified at all points of time
+
+ This is also true of `Dynamic`s
+
+`Event`s are only specified at some unique points of time
+
+So all `Behavior`s have a value before any of the `Event`s fire
+
+It is perfectly valid to have `Event`s that build a `Behavior` and also depend on the `Behavior`
+
+This is where the one frame delay comes in - we are using the old value of the `Behavior` to build the new value of the `Behavior`
+
+This means some dependencies can be loops, which is fine
+
+We just need a way to specify them
 -->
 
-##
-
 ```haskell
-splitPair ::  Reflex t 
-          => Dynamic t (Colour, Colour)
-          ->   (Dynamic t Colour, Dynamic t Colour)
-splitPair dPair =
-  let
-    p1 =               fmap fst dPair
-    p2 =               fmap snd dPair
-  in     (p1, p2)
+counter :: ReflexM m
+        => 
+           Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter        eAdd eClear = do
+
+
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$ eAdd
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
 ```
 
 ##
 
 ```haskell
-splitPair :: (Reflex t, MonadHold t m, MonadFix m)
-          => Dynamic t (Colour, Colour)
-          ->   (Dynamic t Colour, Dynamic t Colour)
-splitPair dPair =
-  let
-    p1 =               fmap fst dPair
-    p2 =               fmap snd dPair
-  in     (p1, p2)
+counter :: ReflexM m
+        => Dynamic Int
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter        eAdd eClear = do
+
+
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$ eAdd
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
 ```
 
 ##
 
 ```haskell
-splitPair :: (Reflex t, MonadHold t m, MonadFix m)
-          => Dynamic t (Colour, Colour)
-          -> m (Dynamic t Colour, Dynamic t Colour)
-splitPair dPair =
-  let
-    p1 =               fmap fst dPair
-    p2 =               fmap snd dPair
-  in     (p1, p2)
+counter :: ReflexM m
+        => Dynamic Int
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dLimit eAdd eClear = do
+
+
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$ eAdd
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
 ```
 
 ##
 
 ```haskell
-splitPair :: (Reflex t, MonadHold t m, MonadFix m)
-          => Dynamic t (Colour, Colour)
-          -> m (Dynamic t Colour, Dynamic t Colour)
-splitPair dPair =
-  do
-    p1 =               fmap fst dPair
-    p2 =               fmap snd dPair
-  in     (p1, p2)
+counter :: ReflexM m
+        => Dynamic Int
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dLimit eAdd eClear = do
+  let dLimitOK = (<) <$> dCount <*> dLimit
+
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$ eAdd
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
 ```
 
 ##
 
 ```haskell
-splitPair :: (Reflex t, MonadHold t m, MonadFix m)
-          => Dynamic t (Colour, Colour)
-          -> m (Dynamic t Colour, Dynamic t Colour)
-splitPair dPair =
-  do
-    p1 <- holdUniqDyn (fmap fst dPair)
-    p2 =               fmap snd dPair
-  in     (p1, p2)
+counter :: ReflexM m
+        => Dynamic Int
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dLimit eAdd eClear = do
+  let dLimitOK = (<) <$> dCount <*> dLimit
+      eAddOK   = gate (current dLimitOK) eAdd
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$ eAdd
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
 ```
 
 ##
 
 ```haskell
-splitPair :: (Reflex t, MonadHold t m, MonadFix m)
-          => Dynamic t (Colour, Colour)
-          -> m (Dynamic t Colour, Dynamic t Colour)
-splitPair dPair =
-  do
-    p1 <- holdUniqDyn (fmap fst dPair)
-    p2 <- holdUniqDyn (fmap snd dPair)
-  in     (p1, p2)
+counter :: ReflexM m
+        => Dynamic Int
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dLimit eAdd eClear = do
+  let dLimitOK = (<) <$> dCount <*> dLimit
+      eAddOK   = gate (current dLimitOK) eAdd
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$ eAddOK
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
 ```
 
 ##
 
 ```haskell
-splitPair :: (Reflex t, MonadHold t m, MonadFix m)
-          => Dynamic t (Colour, Colour)
-          -> m (Dynamic t Colour, Dynamic t Colour)
-splitPair dPair =
-  do
-    p1 <- holdUniqDyn (fmap fst dPair)
-    p2 <- holdUniqDyn (fmap snd dPair)
-    pure (p1, p2)
+counter :: ReflexM m
+        => Dynamic Int
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dLimit eAdd eClear = do
+  let dLimitOK = (<) <$> dCount <*> dLimit
+      eAddOK   = gate (current dLimitOK) eAdd
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$ eAddOK
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
 ```
+
+<div id="examples-recursiveDo-3"></div>
+
+##
+
+```haskell
+limit :: ReflexM m
+      => Event () 
+      -> Event ()
+      -> Event ()
+      -> m (Dynamic Int)
+limit eStart eAdd eClear = do
+  eLoadLimit <- performEvent (loadLimitDb <$ eStart)
+
+  dLimit <- foldDyn ($) 5 . mergeWith (.) $ [
+      const   <$> eLoadLimit
+    , (+ 1)   <$  eAdd
+    , const 0 <$  eClear
+    ]
+    
+  performEvent_ (saveLimitDb <$> update dLimit) 
+    
+  return dLimit
+```
+
+<div id="examples-recursiveDo-1"></div>
+
+##
+
+```haskell
+data Settings =
+  Settings {
+    settingLimit :: Int
+  , settingStep  :: Int
+  }
+```
+
+##
+
+```haskell
+counter :: ReflexM m
+        => Dynamic Int
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dLimit    eAdd eClear = do
+  let 
+      
+      dLimitOK = (<) <$> dCount <*> dLimit
+      eAddOK   = gate (current dLimitOK) eAdd
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$                      eAddOK
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
+```
+
+##
+
+```haskell
+counter :: ReflexM m
+        => Dynamic Settings
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dLimit    eAdd eClear = do
+  let 
+      
+      dLimitOK = (<) <$> dCount <*> dLimit
+      eAddOK   = gate (current dLimitOK) eAdd
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$                      eAddOK
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
+```
+
+##
+
+```haskell
+counter :: ReflexM m
+        => Dynamic Settings
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dSettings eAdd eClear = do
+  let 
+      
+      dLimitOK = (<) <$> dCount <*> dLimit
+      eAddOK   = gate (current dLimitOK) eAdd
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$                      eAddOK
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
+```
+
+##
+
+```haskell
+counter :: ReflexM m
+        => Dynamic Settings
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dSettings eAdd eClear = do
+  let dLimit   = settingsLimit <$> dSettings
+      
+      dLimitOK = (<) <$> dCount <*> dLimit
+      eAddOK   = gate (current dLimitOK) eAdd
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$                      eAddOK
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
+```
+
+##
+
+```haskell
+counter :: ReflexM m
+        => Dynamic Settings
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dSettings eAdd eClear = do
+  let dLimit   = settingsLimit <$> dSettings
+      dStep    = settingsStep  <$> dSettings
+      dLimitOK = (<) <$> dCount <*> dLimit
+      eAddOK   = gate (current dLimitOK) eAdd
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+ 1)   <$                      eAddOK
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
+```
+
+##
+
+```haskell
+counter :: ReflexM m
+        => Dynamic Settings
+        -> Event ()
+        -> Event ()
+        -> m (Dynamic Int)
+counter dSettings eAdd eClear = do
+  let dLimit   = settingsLimit <$> dSettings
+      dStep    = settingsStep  <$> dSettings
+      dLimitOK = (<) <$> dCount <*> dLimit
+      eAddOK   = gate (current dLimitOK) eAdd
+
+  dCount <- foldDyn ($) 0 . mergeWith (.) $ [
+      (+  )   <$> tag (current dStep) eAddOK
+    , const 0 <$ eClear
+    ]
+    
+  return dCount
+```
+
+##
+
+```haskell
+counter (Settings <$> dLimit <*> dStep) eAdd eClear
+```
+
+<div id="examples-recursiveDo-4"></div>

@@ -1,5 +1,5 @@
 
-# `DomBuilder`
+# Working with the DOM
 
 ## 
 
@@ -14,14 +14,14 @@ We'll be introducing some pieces of TodoMVC as we go
 -->
 
 ```haskell
-el :: DomBuilder t m 
+el :: ReflexM m
    => Text 
    -> m a 
    -> m a
 ```
 
 ```haskell
-text :: DomBuilder t m 
+text :: ReflexM m
      => Text 
      -> m ()
 ```
@@ -56,17 +56,17 @@ And we have finer grain control of what undergoes rendering changes
 ##
 
 ```haskell
-button :: DomBuilder t m 
+button :: ReflexM m
        => Text 
-       -> m (Event t ())
+       -> m (Event ())
 ```
 
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => Text 
-         -> m (Event t ())
+         -> m (Event ())
 todoItem placeholder =
   el "div" $ do
     el "div" $ 
@@ -79,8 +79,8 @@ todoItem placeholder =
 ##
 
 ```haskell
-dynText :: (PostBuild t m, DomBuilder t m) 
-        => Dynamic t Text 
+dynText :: ReflexM m
+        => Dynamic Text 
         -> m ()
 ```
 
@@ -149,9 +149,9 @@ el "div" $ mdo
 ##
 
 ```haskell
-elAttr    ::  DomBuilder t m 
+elAttr    :: ReflexM m
           => Text 
-          ->            Map Text Text 
+          ->          Map Text Text 
           -> m a 
           -> m a
 ```
@@ -159,9 +159,9 @@ elAttr    ::  DomBuilder t m
 ##
 
 ```haskell
-elDynAttr :: (DomBuilder t m, PostBuild t m) 
+elDynAttr :: ReflexM m
           => Text 
-          -> Dynamic t (Map Text Text) 
+          -> Dynamic (Map Text Text) 
           -> m a 
           -> m a
 ```
@@ -169,9 +169,9 @@ elDynAttr :: (DomBuilder t m, PostBuild t m)
 ##
 
 ```haskell
-elClass    ::  DomBuilder t m 
+elClass    :: ReflexM m
            => Text 
-           ->           Text 
+           ->         Text 
            -> m a 
            -> m a
 ```
@@ -179,9 +179,9 @@ elClass    ::  DomBuilder t m
 ##
 
 ```haskell
-elDynClass :: (DomBuilder t m, PostBuild t m) 
+elDynClass :: ReflexM m
            => Text 
-           -> Dynamic t Text 
+           -> Dynamic Text 
            -> m a 
            -> m a
 ```
@@ -189,9 +189,9 @@ elDynClass :: (DomBuilder t m, PostBuild t m)
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => Text 
-         -> m (Event t ())
+         -> m (Event ())
 todoItem placeholder =
   el      "div"             $  do
 
@@ -209,9 +209,9 @@ todoItem placeholder =
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM
          => Text 
-         -> m (Event t ())
+         -> m (Event ())
 todoItem placeholder =
   elClass "div"             $  do
 
@@ -229,9 +229,9 @@ todoItem placeholder =
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => Text 
-         -> m (Event t ())
+         -> m (Event ())
 todoItem placeholder =
   elClass "div" "todo-item" $  do
 
@@ -249,9 +249,9 @@ todoItem placeholder =
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => Text 
-         -> m (Event t ())
+         -> m (Event ())
 todoItem placeholder =
   elClass "div" "todo-item" $  do
 
@@ -269,9 +269,9 @@ todoItem placeholder =
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => Text 
-         -> m (Event t ())
+         -> m (Event ())
 todoItem placeholder =
   elClass "div" "todo-item" $ mdo
 
@@ -289,9 +289,9 @@ todoItem placeholder =
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => Text 
-         -> m (Event t ())
+         -> m (Event ())
 todoItem placeholder =
   elClass "div" "todo-item" $ mdo
 
@@ -309,9 +309,9 @@ todoItem placeholder =
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => Text 
-         -> m (Event t ())
+         -> m (Event ())
 todoItem placeholder =
   elClass "div" "todo-item" $ mdo
 
@@ -331,15 +331,15 @@ todoItem placeholder =
 ##
 
 ```haskell
-data CheckboxConfig t = 
+data CheckboxConfig = 
   CheckboxConfig { 
-      _checkboxConfig_setValue   :: Event   t Bool
-    , _checkboxConfig_attributes :: Dynamic t (Map Text Text)
+      _checkboxConfig_setValue   :: Event   Bool
+    , _checkboxConfig_attributes :: Dynamic (Map Text Text)
     }
 ```
 
 ```haskell
-instance Reflex t => Default (CheckboxConfig t) where ...
+instance Default CheckboxConfig where ...
 ```
 
 ## 
@@ -366,15 +366,15 @@ data Checkbox t =
 ```haskell
 data TodoItemConfig =
   TodoItemConfig {
-    _todoItemConfig_dText :: Dynamic t Text
+    _todoItemConfig_dText :: Dynamic Text
   }
 
 makeLenses ''TodoItemConfig
 
-data TodoItem t =
+data TodoItem =
   TodoItem {
-    _todoItem_dComplete :: Dynamic t Bool
-  , _todoItem_eRemove   :: Event   t ()
+    _todoItem_dComplete :: Dynamic Bool
+  , _todoItem_eRemove   :: Event   ()
   }
 
 makeLenses ''TodoItem

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RecursiveDo #-}
@@ -15,7 +16,7 @@ import Data.Text (Text)
 import Data.Time (getCurrentTime)
 
 import Reflex.Dom.Core
-import GHCJS.DOM.Types (MonadJSM(..))
+import GHCJS.DOM.Types (MonadJSM(..), JSString, toJSString)
 
 import Colour
 
@@ -45,6 +46,8 @@ attachEventExamples = do
   attachId_ "examples-events-either"
     demoEither
 
+  attachId_ "examples-events-clickMe"
+    demoClickMe
   attachId_ "examples-events-tick"
     demoTick
 
@@ -247,6 +250,42 @@ demoEither = divClass "panel panel-default" . divClass "panel-body" $ mdo
     return (eInput, eReset)
   return ()
 
+alertEvent :: MonadWidget t m => (a -> String) -> Event t a -> m ()
+#ifdef ghcjs_HOST_OS
+alertEvent str e = performEvent_ (alert <$> e)
+  where
+    alert a = liftIO $ js_alert $ toJSString $ str a
+
+foreign import javascript unsafe
+  "alert($1)"
+  js_alert :: JSString -> IO ()
+#else
+alertEvent = error "alertEvent: can only be used with GHCJS"
+js_alert = error "js_alert: can only be used with GHCJS"
+#endif
+
+demoClickMe ::
+  MonadWidget t m =>
+  m ()
+demoClickMe = divClass "panel panel-default" . divClass "panel-body" $ do
+  eClick <- button "Click Me"
+  eOnes <- accum (+) 0 (1 <$ eClick)
+  let
+    eHundreds = (* 100) <$> eOnes
+    eSum      = mergeWith (+) [eOnes, eHundreds]
+  alertEvent show eSum
+
+demoClickMe2 ::
+  MonadWidget t m =>
+  m ()
+demoClickMe2 = divClass "panel panel-default" . divClass "panel-body" $ do
+  eClick <- button "Click Me"
+  dOnes <- foldDyn ($) 0 ((+ 1) <$ eClick)
+  let
+    dHundreds = (* 100) <$> dOnes
+    dSum = (+) <$> dOnes <*> dHundreds
+  alertEvent show (updated dSum)
+
 demoTick ::
   MonadWidget t m =>
   m ()
@@ -266,18 +305,6 @@ demoTick' ::
   MonadWidget t m =>
   m (Event t ())
 demoTick' = mdo
-  dClick <- foldDyn (:) [] .
-            leftmost $ [
-                Just <$> eClick
-              , Nothing <$ eTick
-              ]
-
-  dTick <- foldDyn (:) [] .
-           leftmost $ [
-               Just <$> eTick
-             , Nothing <$ eClick
-             ]
-
   drawGrid defaultGridConfig
     [ Row "eClick" 1 dClick
     , Row "eTick" 3 dTick
@@ -289,6 +316,18 @@ demoTick' = mdo
     eTick' <- tickLossy 2 now
     eReset' <- buttonClass "btn btn-default pull-right" "Reset"
     return (Blue <$ eClick', Red <$ eTick', eReset')
+
+  dClick <- foldDyn (:) [] .
+            leftmost $ [
+                Just <$> eClick
+              , Nothing <$ eTick
+              ]
+
+  dTick <- foldDyn (:) [] .
+           leftmost $ [
+               Just <$> eTick
+             , Nothing <$ eClick
+             ]
 
   return eReset
 

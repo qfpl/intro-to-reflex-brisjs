@@ -24,19 +24,22 @@ in
       cp -r ${reflex-materials-code}/* ./
       cp $src/css/* ./css/
       rm ./css/grid-light.css
+      cp $src/js/* ./js/
       cp $src/images/* ./images/
     '';
 
     buildPhase = ''
       cat $src/slides/title.md \
-          $src/slides/introduction.md \
-          $src/slides/getting-started.md \
+          $src/slides/virtual-dom.md \
+          $src/slides/frp.md \
+          $src/slides/why-haskell.md \
+          $src/slides/haskell-intro.md \
           $src/slides/events.md \
           $src/slides/behaviors.md \
           $src/slides/dynamics.md \
-          $src/slides/recursivedo.md \
           $src/slides/dom.md \
           $src/slides/switching.md \
+          $src/slides/components.md \
           $src/slides/collections.md \
           $src/slides/conclusion.md \
           > slides.md

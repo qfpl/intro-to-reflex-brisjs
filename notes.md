@@ -1,83 +1,38 @@
-
-Probably want a "Why is this in Haskell?" section
-
-Probably want an introduction to Haskell syntax and idioms
-  particularly
-    typeclasses
-    functor and applicative
-  although these could be quite handwavy
-
-Probably want more work on the FRP introduction
-
-The frames / transactions point can be pushed a bit harder
-The correspondence with ES for events and CQRS for behaviors might play well
-
-Can probably compress some of the bits around behaviors and dynamics and recursive do
-  really need to slow down through the idea of events that fire with function values
-  important to really stress that dyanmic used well can give you virtual dom equivalent behavior without having to diff or patch
-
-Need to really trim down the switching
-  maybe flick between a text field and a timer, sample them from the outside
-
-Spend a bit of time on API / component design
-  - dynamics in and events out as a default
-  - some exceptions where you want to close the loop to contain information
-
-Doing more with the collection management would be good, probably with less details
-  - manage the todo item list with the whole model exposed
-  - pare it back to just what needs to be exposed
-  - show that there are tools in place to make that even simpler
-
 Strip out all of the typeclass constraints
 
-Code - DONE:
-  for events:
-    a timer ticking and firing red while a button press fires blue
+events.md
+- the frames / transactions point can be pushed a bit harder
 
-  for recursive do:
-    have the limit = 1 + number of presses of clear behind the scenes
-    or do the limit on one page as a counter example, and the limited count on the next page
+behaviors.md
+- mention the CQRS link
 
-  for switching:
-    switching between a text and a button
-    - via hiding
-    - via rebuilding
-    switching between a text and a timer
-    - via hiding
-    - via rebuilding
+dynamic.md
+  important to really stress that dyanmic used well can give you virtual dom equivalent behavior without having to diff or patch
 
-Code - TODO:
+dom.md
 
-  for collections:
-    skip the filter, go straight to the bidirectional mark complete and to clear complete 
+switching.md
 
-    complete : dComplete -> eComplete
-    edit : dText -> eText
-    button: () -> eRemove
-    
-    add :: () -> eText
+  Possibly put some of this before the dom and some of it after
 
-    markAllComplete : dAllComplete -> eMarkAllComplete 
-    clearComplete : dAnyComplete -> eClearComplete
- 
-    complete : (iComplete, eMarkAllComplete eClearComplete -> (dComplete eRemove)
-    edit : dText -> (eText, eRemove)
-    button: () -> eRemove
+  Need to really trim down the switching
+    basic example of switching, like a railway switchyard
+    show widgetHold for switching out pieces of the DOM
+    - with text and a button
+    - with text and a timer
 
-    show the item, play with the item in a test bed
-    show how it gets used in a collection, that we have the whole model if we want it off to one side
-    argue that if we don't need the model, we're doing more state management than we need / are leaking information
+components.md
 
-    have the todo item trigger a remove on empty text
-    remove the text handling from the todo list
+  Spend a bit of time on API / component design
+    - dynamics in and events out as a default
+    - some exceptions where you want to close the loop to contain information
+  cover component design for things we'll use in the next bit
 
-    further change: use EventWriterT to make managing removes easier
+collections.md
 
-    talk about clear complete and mark complete
-    show the components
+  Doing more with the collection management would be good, probably with less details
+    - manage the todo item list with the whole model exposed
+    - pare it back to just what needs to be exposed
+    - show that there are tools in place to make that even simpler
 
-    show how that works with the modelling of completeness
-
-    show a version of the todo item takes eClearComplete and eMarkComplete as inputs and return dComplete as an output
-    show the changes to the todo list
 

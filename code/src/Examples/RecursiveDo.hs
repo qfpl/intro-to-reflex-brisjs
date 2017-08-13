@@ -26,10 +26,17 @@ attachRecursiveDoExamples ::
   MonadJSM m =>
   m ()
 attachRecursiveDoExamples = do
-  mdCount1 <- attachId "examples-recursiveDo-1"
-    counterExample1
-  attachId_ "examples-recursiveDo-2" $
-    counterExample2 $ fromMaybe (pure 5) mdCount1
+  mdLimit <- attachId "examples-recursiveDo-1" $
+    counterExample1 5
+  mdStep <- attachId "examples-recursiveDo-2" $
+    counterExample1 1
+  attachId_ "examples-recursiveDo-3" $ do
+    let
+      dLimit = fromMaybe (pure 5) mdLimit
+      dStep = fromMaybe (pure 1) mdStep
+    counterExample2 dLimit dStep
+  attachId_ "examples-recursiveDo-4"
+    bigExample
 
 mkCounter ::
   MonadWidget t m =>
@@ -51,11 +58,12 @@ counter1 ::
   , MonadHold t m
   , MonadFix m
   ) =>
+  Int ->
   Event t () ->
   Event t () ->
   m (Dynamic t Int)
-counter1 eAdd eClear =
-  foldDyn ($) 0 .
+counter1 initial eAdd eClear =
+  foldDyn ($) initial .
   mergeWith (.) $ [
       const 0 <$ eClear
     , (+ 1) <$ eAdd
@@ -63,26 +71,36 @@ counter1 eAdd eClear =
 
 counterExample1 ::
   MonadWidget t m =>
+  Int ->
   m (Dynamic t Int)
-counterExample1 =
-  mkCounter counter1
+counterExample1 i =
+  mkCounter (counter1 i)
+
+data Settings =
+  Settings {
+    settingsLimit :: Int
+  , settingsStep :: Int
+  }
 
 counter2 ::
   ( Reflex t
   , MonadHold t m
   , MonadFix m
   ) =>
-  Dynamic t Int ->
+  Dynamic t Settings ->
   Event t () ->
   Event t () ->
   m (Dynamic t Int)
-counter2 dLimit eAdd eClear = mdo
+counter2 dSettings eAdd eClear = mdo
   let
+    dLimit = settingsLimit <$> dSettings
+    dStep = settingsStep <$> dSettings
     dAtLimit = (<) <$> dCount <*> dLimit
+    eAddOK = gate (current dAtLimit) eAdd
 
   dCount <- foldDyn ($) 0 . mergeWith (.) $ [
-      const 0 <$ eClear
-    , (+ 1)   <$ gate (current dAtLimit) eAdd
+      (+)     <$> tag (current dStep) eAddOK
+    , const 0 <$  eClear
     ]
 
   return dCount
@@ -90,6 +108,22 @@ counter2 dLimit eAdd eClear = mdo
 counterExample2 ::
   MonadWidget t m =>
   Dynamic t Int ->
+  Dynamic t Int ->
   m (Dynamic t Int)
-counterExample2 dLimit =
-  mkCounter $ counter2 dLimit
+counterExample2 dLimit dStep =
+  mkCounter $ counter2 $ Settings <$> dLimit <*> dStep
+
+bigExample ::
+  MonadWidget t m =>
+  m ()
+bigExample = do
+  dLimit <- el "div" $ do
+    text "Limit"
+    counterExample1 5
+  dStep <- el "div" $ do
+    text "Step"
+    counterExample1 1
+  _ <- el "div" $ do
+    text "Counter"
+    mkCounter $ counter2 $ Settings <$> dLimit <*> dStep
+  pure ()

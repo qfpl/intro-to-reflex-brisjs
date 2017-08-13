@@ -4,7 +4,7 @@
 ##
 
 ```haskell
-data Behavior t a
+data Behavior a
 
 
 
@@ -14,29 +14,20 @@ data Behavior t a
 ##
 
 ```haskell
-data Behavior t a
+data Behavior a
 
   ~
 
-t -> a
+time -> a
 ```
 
 ##
 
 ```haskell
-hold :: MonadHold t m
+hold :: ReflexM m 
      => a
-     -> Event t a
-     -> m (Behavior t a)
-```
-
-##
-
-```haskell
-tag :: Reflex t 
-    => Behavior t a
-    -> Event t b
-    -> Event t a
+     -> Event a
+     -> m (Behavior a)
 ```
 
 ##
@@ -74,9 +65,9 @@ sampleBlue eInput         = do
 ##
 
 ```haskell
-sampleBlue eInput         = do
-  bColour <- hold Blue eInput
-         tag 
+tag :: Behavior a
+    -> Event  b
+    -> Event  a
 ```
 
 ##
@@ -84,7 +75,23 @@ sampleBlue eInput         = do
 ```haskell
 sampleBlue eInput         = do
   bColour <- hold Blue eInput
-         tag bColour
+ 
+```
+
+##
+
+```haskell
+sampleBlue eInput         = do
+  bColour <- hold Blue eInput
+           tag 
+```
+
+##
+
+```haskell
+sampleBlue eInput         = do
+  bColour <- hold Blue eInput
+           tag bColour
 ```
 
 ##
@@ -92,7 +99,7 @@ sampleBlue eInput         = do
 ```haskell
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
-         tag bColour
+           tag bColour
 ```
 
 ##
@@ -100,7 +107,7 @@ sampleBlue eInput eSample = do
 ```haskell
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
-         tag bColour eSample
+           tag bColour eSample
 ```
 
 ##
@@ -108,7 +115,7 @@ sampleBlue eInput eSample = do
 ```haskell
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
-  pure $ tag bColour eSample
+  return $ tag bColour eSample
 ```
 
 ##
@@ -116,7 +123,7 @@ sampleBlue eInput eSample = do
 ```haskell
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
-  pure $ tag bColour eSample
+  return $ tag bColour eSample
 ```
 
 <div id="examples-behaviors-sampleBlue1"></div>
@@ -137,7 +144,7 @@ We can see that by sampling from the `Behavior` when any of the buttons are pres
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
 
-  pure $ tag bColour eSample
+  return $ tag bColour eSample
 ```
 
 ##
@@ -146,7 +153,7 @@ sampleBlue eInput eSample = do
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
   let eAny = leftmost [                     ]
-  pure $ tag bColour eSample
+  return $ tag bColour eSample
 ```
 
 ##
@@ -155,7 +162,7 @@ sampleBlue eInput eSample = do
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
   let eAny = leftmost [              eSample]
-  pure $ tag bColour eSample
+  return $ tag bColour eSample
 ```
 
 ##
@@ -164,7 +171,7 @@ sampleBlue eInput eSample = do
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
   let eAny = leftmost [      eInput, eSample]
-  pure $ tag bColour eSample
+  return $ tag bColour eSample
 ```
 
 ##
@@ -173,7 +180,7 @@ sampleBlue eInput eSample = do
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
   let eAny = leftmost [() <$ eInput, eSample]
-  pure $ tag bColour eSample
+  return $ tag bColour eSample
 ```
 
 ##
@@ -182,7 +189,7 @@ sampleBlue eInput eSample = do
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
   let eAny = leftmost [() <$ eInput, eSample]
-  pure $ tag bColour eAny
+  return $ tag bColour eAny
 ```
 
 ##
@@ -191,7 +198,7 @@ sampleBlue eInput eSample = do
 sampleBlue eInput eSample = do
   bColour <- hold Blue eInput
   let eAny = leftmost [() <$ eInput, eSample]
-  pure $ tag bColour eAny
+  return $ tag bColour eAny
 ```
 
 <div id="examples-behaviors-sampleBlue2"></div>
@@ -199,285 +206,36 @@ sampleBlue eInput eSample = do
 ##
 
 ```haskell
-attach          :: Reflex t 
-                => 
-                   Behavior t a 
-                -> Event t b 
-                -> Event t (a, b)
+attach          :: 
+                   Behavior a 
+                -> Event b 
+                -> Event (a, b)
 ```
 
 ##
 
 ```haskell
-attachWith      :: Reflex t 
-                => (a -> b -> c) 
-                -> Behavior t a
-                -> Event t b
-                -> Event t c
+attachWith      :: (a -> b -> c) 
+                -> Behavior a
+                -> Event b
+                -> Event c
 ```
 
 ##
 
 ```haskell
-attachWithMaybe :: Reflex t
-                => (a -> b -> Maybe c) 
-                -> Behavior t a
-                -> Event t b
-                -> Event t c
+attachWithMaybe :: (a -> b -> Maybe c) 
+                -> Behavior a
+                -> Event b
+                -> Event c
 ```
 
 ##
 
 ```haskell
-gate            :: Reflex t 
-                => 
-                   Behavior t Bool
-                -> Event t a
-                -> Event t a
+gate            :: 
+                   Behavior Bool
+                -> Event a
+                -> Event a
 ```
 
-##
-
-```haskell
-instance Functor (Behavior t) where ..
-```
-
-##
-
-```haskell
-sampleBlue     eInput eSample = do
-  bColour <- hold Blue eInput
-
-  pure $ tag        bColour eSample
-```
-
-##
-
-```haskell
-sampleFlipBlue eInput eSample = do
-  bColour <- hold Blue eInput
-
-  pure $ tag        bColour eSample
-```
-
-##
-
-```haskell
-sampleFlipBlue eInput eSample = do
-  bColour <- hold Blue eInput
-  let bFlippedColour = flipColour <$> bColour
-  pure $ tag        bColour eSample
-```
-
-##
-
-```haskell
-sampleFlipBlue eInput eSample = do
-  bColour <- hold Blue eInput
-  let bFlippedColour = flipColour <$> bColour
-  pure $ tag bFlippedColour eSample
-```
-
-##
-
-```haskell
-sampleFlipBlue eInput eSample = do
-  bColour <- hold Blue eInput
-  let bFlippedColour = flipColour <$> bColour
-  pure $ tag bFlippedColour eSample
-```
-
-<div id="examples-behaviors-sampleFlipBlue"></div>
-
-##
-
-```haskell
-b <- hold (f initial) (f <$> eChange)
-pure b
-```
-~
-```haskell
-b <- hold initial eChange
-pure $ f <$> b
-```
-
-##
-
-```haskell
-instance Applicative (Behavior t) where ..
-```
-
-##
-
-```haskell
-sampleBlue       eInput eSample = do
-  bColour <- hold    Blue eInput
-  pure $ tag bColour     eSample
-```
-
-##
-
-```haskell
-sampleAlwaysBlue eInput eSample = do
-  bColour <- hold    Blue eInput
-  pure $ tag bColour     eSample
-```
-
-##
-
-```haskell
-sampleAlwaysBlue eInput eSample = do
-  let bColour = pure Blue
-  pure $ tag bColour     eSample
-```
-
-##
-
-```haskell
-sampleAlwaysBlue eInput eSample = do
-
-  pure $ tag (pure Blue) eSample
-```
-
-##
-
-```haskell
-sampleAlwaysBlue eInput eSample =
-
-         tag (pure Blue) eSample
-```
-
-##
-
-```haskell
-sampleAlwaysBlue eInput eSample =
-
-         tag (pure Blue) eSample
-```
-
-<div id="examples-behaviors-sampleAlwaysBlue"></div>
-
-##
-
-```haskell
-sampleBlue eInput          eSample = do
-  bColour  <- hold Blue eInput
-
-
-  pure $ tag bColour                            eSample
-```
-
-##
-
-```haskell
-samplePair eInput          eSample = do
-  bColour  <- hold Blue eInput
-
-
-  pure $ tag bColour                            eSample
-```
-
-##
-
-```haskell
-samplePair eInput1         eSample = do
-  bColour1 <- hold Blue eInput1
-
-
-  pure $ tag bColour1                           eSample
-```
-
-##
-
-```haskell
-samplePair eInput1 eInput2 eSample = do
-  bColour1 <- hold Blue eInput1
-
-
-  pure $ tag bColour1                           eSample
-```
-
-##
-
-```haskell
-samplePair eInput1 eInput2 eSample = do
-  bColour1 <- hold Blue eInput1
-  bColour2 <- hold Blue eInput2
-
-  pure $ tag bColour1                           eSample
-```
-
-##
-
-```haskell
-samplePair eInput1 eInput2 eSample = do
-  bColour1 <- hold Blue eInput1
-  bColour2 <- hold Blue eInput2
-  let bPair = (,) <$> bColour1 <*> bColour2
-  pure $ tag bColour1                           eSample
-```
-
-##
-
-```haskell
-samplePair eInput1 eInput2 eSample = do
-  bColour1 <- hold Blue eInput1
-  bColour2 <- hold Blue eInput2
-  let bPair = (,) <$> bColour1 <*> bColour2
-  pure $ tag bPair                              eSample
-```
-
-##
-
-```haskell
-samplePair eInput1 eInput2 eSample = do
-  bColour1 <- hold Blue eInput1
-  bColour2 <- hold Blue eInput2
-
-  pure $ tag ((,) <$> bColour1 <*> bColour2)    eSample
-```
-
-##
-
-```haskell
-samplePair eInput1 eInput2 eSample = do
-  bColour1 <- hold Blue eInput1
-  bColour2 <- hold Blue eInput2
-
-  pure $      (,) <$> bColour1 <*> bColour2  <@ eSample
-```
-
-##
-
-```haskell
-samplePair eInput1 eInput2 eSample = do
-  bColour1 <- hold Blue eInput1
-  bColour2 <- hold Blue eInput2
-
-  pure $      (,) <$> bColour1 <*> bColour2  <@ eSample
-```
-
-<div id="examples-behaviors-samplePair"></div>
-
-##
-
-```haskell
-instance Reflex t => 
-         Monad (Behavior t) where ..
-```
-
-```haskell
-instance (Reflex t, Monoid a) => 
-         Monoid (Behavior t a) where ..
-
-```
-
-```haskell
-instance (Reflex t, Num a) => 
-         Num (Behavior t a) where ..
-```
-
-```haskell
-instance (Reflex t, IsString a) => 
-         IsString (Behavior t a) where ..
-```
