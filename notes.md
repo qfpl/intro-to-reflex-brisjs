@@ -7,12 +7,6 @@ behaviors.md
 
 dom.md
 
-switching.md
-  Need to really trim down the switching
-    show widgetHold for switching out pieces of the DOM
-    - with text and a button
-    - with text and a timer
-
 components.md
 
   Spend a bit of time on API / component design
@@ -26,5 +20,18 @@ collections.md
     - manage the todo item list with the whole model exposed
     - pare it back to just what needs to be exposed
     - show that there are tools in place to make that even simpler
+    
+  we want
+    wrap up the create / alter / delete stuff in an abstraction 
+  
+    TodoItemModel Bool Text
+    components return (Event (TodoItemModel -> TodoItemModel), Event ()))
+    that gets used to build up a model of that is going on
+    we have a dynamic map of our state
+    
+    we can remove almost all of that
+    text edit minds it's own business
+    return the dynamic for completed
+
 
 

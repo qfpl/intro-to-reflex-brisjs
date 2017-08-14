@@ -3,8 +3,6 @@ module Examples (
     examples
   ) where
 
-import Control.Monad.Reader (runReaderT)
-
 import GHCJS.DOM.Types (JSM)
 
 import Util.Attach
@@ -16,6 +14,7 @@ import Examples.Dynamics (attachDynamicExamples)
 import Examples.RecursiveDo (attachRecursiveDoExamples)
 import Examples.Dom (attachDomExamples)
 import Examples.Switch (attachSwitchExamples)
+import Examples.List (attachListExamples)
 import Examples.Collection (attachCollectionExamples)
 
 examples :: JSM ()
@@ -28,5 +27,6 @@ examples = do
   attachRecursiveDoExamples
   attachDomExamples
   attachSwitchExamples
+  attachListExamples
   attachCollectionExamples
 

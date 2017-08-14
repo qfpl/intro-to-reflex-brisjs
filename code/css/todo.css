@@ -45,6 +45,7 @@
 .todo-item button {
     margin-left: 10px;
     align-self: flex-end;
+    display: flex;
 }
 
 .add-item {

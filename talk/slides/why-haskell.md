@@ -3,7 +3,7 @@
 
 ##
 
-The `reflex` library is written in Haskell...
+The `reflex` library is written in Haskell, using GHCJS to compile to Javascript ...
 
 ##
 

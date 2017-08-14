@@ -9,15 +9,17 @@ Portability : non-portable
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RecursiveDo #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Examples.List (
     attachListExamples
   ) where
 
 import Control.Monad (void)
+import Data.Semigroup (Semigroup(..))
 
 import Control.Lens
 
-import Control.Monad.Reader (MonadReader, ask, runReaderT)
+import Control.Monad.Reader (MonadReader, ReaderT, ask, runReaderT)
 
 import Data.Text (Text)
 import qualified Data.Text as Text
@@ -118,7 +120,7 @@ todoList1 ::
   MonadWidget t m =>
   m ()
 todoList1 = elClass "div" "todo-list" $ mdo
-  eAdd <- elClass "div" "add-item" addItem
+  eAdd <- addItem
   dCount :: Dynamic t Int <- count eAdd
 
   dMap <- foldDyn ($) Map.empty . mergeWith (.) $ [
@@ -219,7 +221,7 @@ todoList2 ::
   MonadWidget t m =>
   m ()
 todoList2 = elClass "div" "todo-list" $ mdo
-  eAdd <- elClass "div" "add-item" addItem
+  eAdd <- addItem
   dCount :: Dynamic t Int <- count eAdd
 
   dMap <- foldDyn ($) Map.empty . mergeWith (.) $ [
@@ -313,7 +315,7 @@ todoList3 ::
   m ()
 todoList3 = elClass "div" "todo-list" $ mdo
 
-  eAdd <- elClass "div" "add-item" addItem
+  eAdd <- addItem
   dCount :: Dynamic t Int <- count eAdd
 
   dMap <- foldDyn ($) Map.empty . mergeWith (.) $ [
@@ -336,9 +338,276 @@ todoList3 = elClass "div" "todo-list" $ mdo
 
   pure ()
 
+data TodoItemModel =
+  TodoItemModel {
+    _timComplete :: Bool
+  , _timText     :: Text
+  }
+
+makeLenses ''TodoItemModel
+
+data TodoWriter k i =
+  TodoWriter {
+    twChanges :: Map k (i -> i)
+  , twRemoves :: Set k
+  }
+
+instance Ord k => Semigroup (TodoWriter k i) where
+  (<>) (TodoWriter m1 s1) (TodoWriter m2 s2) =
+    TodoWriter (Map.unionWith (.) m1 m2) (Set.union s1 s2)
+
+instance Ord k => Monoid (TodoWriter k i) where
+  mempty = TodoWriter Map.empty Set.empty
+
+changeEvent ::
+  ( Ord k
+  , MonadReader k m
+  , EventWriter t (TodoWriter k i) m
+  , Reflex t
+  ) =>
+  Event t (i -> i) ->
+  m ()
+changeEvent e = do
+  k <- ask
+  tellEvent $ (\f -> TodoWriter (Map.singleton k f) Set.empty) <$> e
+
+removeEvent ::
+  ( Ord k
+  , MonadReader k m
+  , EventWriter t (TodoWriter k i) m
+  , Reflex t
+  ) =>
+  Event t a ->
+  m ()
+removeEvent e = do
+  k <- ask
+  tellEvent $ TodoWriter Map.empty (Set.singleton k) <$ e
+
+todoListHelper ::
+  ( Num k
+  , Ord k
+  , MonadWidget t m
+  ) =>
+  Event t i ->
+  (Dynamic t i -> ReaderT k (EventWriterT t (TodoWriter k i) m) a) ->
+  m (Dynamic t (Map k i), Dynamic t (Map k a))
+todoListHelper eAdd w = mdo
+  dCount <- count eAdd
+
+  let
+    applyChanges = Map.mergeWithKey (\_ f x -> Just $ f x) (const Map.empty) id
+    applyRemoves = flip (foldr Map.delete)
+
+  dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+      Map.insert   <$> current dCount <@> eAdd
+    , applyChanges <$> eChanges
+    , applyRemoves <$> eRemoves
+    ]
+
+  (dResult, writer) <-
+    runEventWriterT .
+      listWithKey dModel $ \k dv ->
+      flip runReaderT k .
+      w $ dv
+
+  let
+    eChanges = twChanges <$> writer
+    eRemoves = twRemoves <$> writer
+
+  pure (dModel, dResult)
+
+complete4 ::
+  ( Ord k
+  , MonadReader k m
+  , EventWriter t (TodoWriter k TodoItemModel) m
+  , MonadWidget t m
+  ) =>
+  Event t Bool ->
+  Event t () ->
+  m (Dynamic t Bool)
+complete4 eMarkAllComplete eClearComplete = do
+  cb <- checkbox False $
+    def & checkboxConfig_setValue .~ eMarkAllComplete
+
+  let
+    eComplete = view checkbox_change cb
+    dComplete = view checkbox_value cb
+
+  changeEvent $ set timComplete <$> eComplete
+  removeEvent $ gate (current dComplete) eClearComplete
+
+  pure dComplete
+
+itemEdit4 ::
+  ( Ord k
+  , MonadReader k m
+  , EventWriter t (TodoWriter k TodoItemModel) m
+  , MonadWidget t m
+  ) =>
+  Dynamic t Text ->
+  m ()
+itemEdit4 dText = do
+  initial <- sample (current dText)
+  Edit eText eRemove <- edit (EditConfig initial)
+  changeEvent $ set timText <$> eText
+  removeEvent eRemove
+  pure ()
+
+remove4 ::
+  ( Ord k
+  , MonadReader k m
+  , EventWriter t (TodoWriter k TodoItemModel) m
+  , MonadWidget t m
+  ) =>
+  m ()
+remove4 = do
+  eRemove <- button "Remove"
+  removeEvent eRemove
+
+todoItem4 ::
+  ( Ord k
+  , MonadReader k m
+  , EventWriter t (TodoWriter k TodoItemModel) m
+  , MonadWidget t m
+  ) =>
+  Event t Bool ->
+  Event t () ->
+  Dynamic t TodoItemModel ->
+  m (Dynamic t Bool)
+todoItem4 eMarkAllComplete eClearComplete dModel = elClass "li" "todo-item" $ do
+  dText <- holdUniqDyn (view timText <$> dModel)
+
+  dComplete <- complete4 eMarkAllComplete eClearComplete
+
+  let
+    mkComplete False = ""
+    mkComplete True = "completed "
+    dClass = fmap mkComplete dComplete
+
+  elDynClass "div" dClass $
+    itemEdit4 dText
+
+  remove4
+
+  pure dComplete
+
+todoList4 ::
+  MonadWidget t m =>
+  m ()
+todoList4 = elClass "div" "todo-list" $ mdo
+  eName <- addItem
+  let
+    eAdd = TodoItemModel False <$> eName
+
+  (dModel, dmdComplete) <- el "ul" $
+    todoListHelper eAdd $
+      todoItem4 eMarkAllComplete eClearComplete
+
+  let
+    dCompletes = joinDynThroughMap dmdComplete
+    dAllComplete = fmap and dCompletes
+    dAnyComplete = fmap or dCompletes
+
+  eMarkAllComplete <- markAllComplete dAllComplete
+  eClearComplete <- clearComplete dAnyComplete
+
+  pure ()
+
+complete5 ::
+  MonadWidget t m =>
+  Event t Bool ->
+  Event t () ->
+  m (Dynamic t Bool, Event t ())
+complete5 eMarkAllComplete eClearComplete = do
+  cb <- checkbox False $
+    def & checkboxConfig_setValue .~ eMarkAllComplete
+
+  let
+    eComplete = view checkbox_change cb
+    dComplete = view checkbox_value cb
+    eRemove   = gate (current dComplete) eClearComplete
+
+  pure (dComplete, eRemove)
+
+itemEdit5 ::
+  MonadWidget t m =>
+  Dynamic t Text ->
+  m (Event t ())
+itemEdit5 dText = do
+  initial <- sample (current dText)
+  Edit _ eRemove <- edit (EditConfig initial)
+  pure eRemove
+
+remove5 ::
+  MonadWidget t m =>
+  m (Event t ())
+remove5 =
+  button "Remove"
+
+todoItem5 ::
+  MonadWidget t m =>
+  Event t Bool ->
+  Event t () ->
+  Dynamic t Text ->
+  m (Dynamic t Bool, Event t ())
+todoItem5 eMarkAllComplete eClearComplete dText = elClass "li" "todo-item" $ do
+  (dComplete, eRemoveComplete) <- complete5 eMarkAllComplete eClearComplete
+
+  let
+    mkComplete False = ""
+    mkComplete True = "completed "
+
+    dClass = fmap mkComplete dComplete
+
+  eRemoveEmpty <- elDynClass "div" dClass $
+    itemEdit5 dText
+
+  eRemoveClick <- remove5
+
+  let
+    eRemove = leftmost [
+        eRemoveComplete
+      , eRemoveEmpty
+      , eRemoveClick
+      ]
+
+  pure (dComplete, eRemove)
+
+todoList5 ::
+  MonadWidget t m =>
+  m ()
+todoList5 = elClass "div" "todo-list" $ mdo
+  eAdd <- addItem
+  dCount <- count eAdd
+
+  let
+    applyRemoves = flip (foldr Map.delete)
+
+  dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+      Map.insert   <$> current dCount <@> eAdd
+    , applyRemoves <$> eRemoves
+    ]
+
+  dList <- el "ul" . list dModel $ \dv ->
+    todoItem5 eMarkAllComplete eClearComplete dv
+
+  let
+    eRemoves = fmap Map.keys . switch . current . fmap (mergeMap . fmap snd) $ dList
+    dmCompletes = joinDynThroughMap . fmap (fmap fst) $ dList
+
+    dAllComplete = fmap and dmCompletes
+    dAnyComplete = fmap or dmCompletes
+
+  eMarkAllComplete <- markAllComplete dAllComplete
+  eClearComplete <- clearComplete dAnyComplete
+
+  pure ()
+
 attachListExamples ::
   MonadJSM m =>
   m ()
 attachListExamples = do
-  attachId_ "examples-list-item" $
-    resetWidget . trackRemove . todoItem1 . pure $ "Test Me"
+  attachId_ "examples-list" $
+    todoList4
+  attachId_ "examples-list-2" $
+    todoList4

@@ -3,278 +3,111 @@
 
 ##
 
-<div class="demo" id="examples-list-item"></div>
-
-##
-
 ```haskell
-addItemWidget :: MonadWidget t m 
-              => m (Event t Text)
-```
-
-##
-
-```haskell
-  ...
-
-  -- eAdd     :: Event t Text
-  eAdd <- addItemWidget
-
-
-
-
-
-
-
-
-  ...
-```
-##
-
-```haskell
-  ...
-
-  -- eAdd     :: Event t Text
-  eAdd <- addItemWidget
-
-  -- dNextKey :: Dynamic t Int
-  dNextKey <- count eAdd
-
-
-
-
-
-  ...
-```
-
-##
-
-```haskell
-  ...
-
-  -- eAdd     :: Event t Text
-  eAdd <- addItemWidget
-
-  -- dNextKey :: Dynamic t Int
-  dNextKey <- count eAdd
-
-  -- dMap     :: Dynamic t (Map Int Text)
-  dMap <- foldDyn ($) Map.empty $
-      Map.insert <$> current dNextKey <@> eAdd
-
-  ...
-```
-
-##
-
-```haskell
-todoItem :: MonadWidget t m 
-            -- The value of the text for the item
-         => Dynamic t Text
-            -- Fires when item should be removed
-         -> m (Event t ())
-```
-
-##
-
-```haskell
-dMap 
-  :: Dynamic t (Map Int Text)
-
-
-
-
-
-
-
-
-
-  
-```
-
-##
-
-```haskell
-dMap 
-  :: Dynamic t (Map Int Text)
-
-todoItem
-  :: MonadWidget t m
-  => Dynamic t Text
-  -> m (Event t ())
-
-
-
-
-    
-```
-
-##
-
-```haskell
-dMap 
-  :: Dynamic t (Map Int Text)
-
-todoItem 
-  :: MonadWidget t m
-  => Dynamic t Text
-  -> m (Event t ())
-
 list 
-  ::         Dynamic t (Map k v     )
-  ->   (Dynamic t v -> m a   ) 
-  -> m (Dynamic t (Map k a         ))
+  ::    Dynamic (Map k v       )
+  ->   (Dynamic        v -> m a) 
+  -> m (Dynamic (Map k        a))
 ```
 
 ##
 
+<div class="demo" id="examples-list"></div>
+
+##
+
+There are going to be some common elements in how we approach this
+
+##
+
 ```haskell
-dMap 
-  :: Dynamic t (Map Int Text)
+  elClass "div" "todo-list" $ do
 
-todoItem
-  :: MonadWidget t m
-  => Dynamic t Text
-  -> m (Event t ())
 
-list dMap 
-  ::
-       (Dynamic t Text -> m a) 
-  -> m (Dynamic t (Map Int a       ))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 ```
-
 ##
 
 ```haskell
-dMap 
-  :: Dynamic t (Map Int Text)
+  elClass "div" "todo-list" $ do
+    eAdd   <- addItem
+    dCount <- count eAdd
 
-todoItem
-  :: MonadWidget t m
-  => Dynamic t Text
-  -> m (Event t ())
 
-list dMap todoItem 
-  ::
 
-     m (Dynamic t (Map Int (Event t ())))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 ```
-
 ##
 
 ```haskell
-  -- Dynamic t (Map Int (Event t ()))
-  dmItems <-           list dMap $ \dv -> 
-                         todoItem dv
+  elClass "div" "todo-list" $ do
+    eAdd   <- addItem
+    dCount <- count eAdd
+
+    -- dModel :: Dynamic (Map Int ?)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd
+      , removeKeys <$> eRemoves -- ?
+      ]
+
+
+
+
+
+
+
+
+
+
+
+  
 ```
-
 ##
 
 ```haskell
-  -- Dynamic t (Map Int (Event t ()))
-  dmItems <- el "ul" . list dMap $ \dv -> 
-               el "li" . todoItem $ dv
-```
+  elClass "div" "todo-list" $ do
+    eAdd   <- addItem
+    dCount <- count eAdd
 
-##
+    -- dModel :: Dynamic (Map Int ?)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd
+      , removeKeys <$> eRemoves -- ?
+      ]
 
-<div class="demo" id="examples-collection-add"></div>
-
-##
-
-```haskell
-  let
-    eRemoves =
-    
-
-
-
-
-
-
-
-      -- Dynamic t (Map Int (Event t ()))
-      dmItems
-```
-
-##
-
-```haskell
-  let
-    eRemoves =
-    
-
-
-
-
-
-      -- Dynamic t (Event t (Map Int ()))
-      fmap mergeMap $
-      -- Dynamic t (Map Int (Event t ()))
-      dmItems
-```
-
-##
-
-```haskell
-  let
-    eRemoves =
-    
-
-
-
-      -- Behavior t (Event t (Map Int ()))
-      current .
-      -- Dynamic t (Event t (Map Int ()))
-      fmap mergeMap $
-      -- Dynamic t (Map Int (Event t ()))
-      dmItems
-```
-
-##
-
-```haskell
-  let
-    eRemoves =
-    
-
-      -- Event t (Map Int ())
-      switch .
-      -- Behavior t (Event t (Map Int ()))
-      current .
-      -- Dynamic t (Event t (Map Int ()))
-      fmap mergeMap $
-      -- Dynamic t (Map Int (Event t ()))
-      dmItems
-```
-
-##
-
-```haskell
-  let
-    eRemoves =
-      -- Event t [Int]
-      fmap Map.keys .
-      -- Event t (Map Int ())
-      switch .
-      -- Behavior t (Event t (Map Int ()))
-      current .
-      -- Dynamic t (Event t (Map Int ()))
-      fmap mergeMap $
-      -- Dynamic t (Map Int (Event t ()))
-      dmItems
-```
-
-##
-
-```haskell
-  dmText <- foldDyn ($) Map.empty                 $
-      Map.insert <$> current dNextKey <@> eAdd
-
-
-
-  dmItems <- el "ul" . list dMap $ \dv -> 
-    el "li"  todoItem $ dv
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv -- ?
 
 
 
@@ -289,78 +122,418 @@ list dMap todoItem
 ##
 
 ```haskell
-  dmText <- foldDyn ($) Map.empty . mergeWith (.) $ [
-      Map.insert <$> current dNextKey <@> eAdd
+  elClass "div" "todo-list" $ do
+    eAdd   <- addItem
+    dCount <- count eAdd
 
-    ]
+    -- dModel :: Dynamic (Map Int ?)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd
+      , removeKeys <$> eRemoves -- ?
+      ]
 
-  dmItems <- el "ul" . list dMap $ \dv -> 
-    el "li"  todoItem $ dv
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv -- ?
 
-
-
-
+    let
+      dAllComplete = fmap and dmCompletes -- ?
+      dAnyComplete = fmap or  dmCompletes -- ?
 
 
 
 
   
 ```
+
 ##
 
 ```haskell
-  dmText <- foldDyn ($) Map.empty . mergeWith (.) $ [
-      Map.insert <$> current dNextKey <@> eAdd
+  elClass "div" "todo-list" $ do
+    eAdd   <- addItem
+    dCount <- count eAdd
 
-    ]
+    -- dModel :: Dynamic (Map Int ?)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd
+      , removeKeys <$> eRemoves -- ?
+      ]
 
-  dmItems <- el "ul" . list dMap $ \dv -> 
-    el "li"  todoItem $ dv
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv -- ?
 
-  let
-    -- Event t [Int]
-    eRemoves =
-      fmap Map.keys .
-      switch .
-      current .
-      fmap mergeMap $
-      dmItems
+    let
+      dAllComplete = fmap and dmCompletes -- ?
+      dAnyComplete = fmap or  dmCompletes -- ?
+
+    eMarkAllComplete <- markAllComplete dAllComplete
+    eClearComplete   <- clearComplete   dAnyComplete
+
+  
 ```
 
 ##
 
 ```haskell
-  dmText <- foldDyn ($) Map.empty . mergeWith (.) $ [
-      Map.insert <$> current dNextKey <@> eAdd
-    , flip (foldr Map.delete) <$> eRemoves
-    ]
+  elClass "div" "todo-list" $ do
+    eAdd   <- addItem
+    dCount <- count eAdd
 
-  dmItems <- el "ul" . list dMap $ \dv -> 
-    el "li"  todoItem $ dv
+    -- dModel :: Dynamic (Map Int ?)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd
+      , removeKeys <$> eRemoves -- ?
+      ]
 
-  let
-    -- Event t [Int]
-    eRemoves =
-      fmap Map.keys .
-      switch .
-      current .
-      fmap mergeMap $
-      dmItems
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv -- ?
+
+    let
+      dAllComplete = fmap and dmCompletes -- ?
+      dAnyComplete = fmap or  dmCompletes -- ?
+
+    eMarkAllComplete <- markAllComplete dAllComplete
+    eClearComplete   <- clearComplete   dAnyComplete
+
+    pure ()
 ```
 
 ##
 
-<div class="demo" id="examples-collection-remove"></div>
-
-<!--
-##
-
-TODO add clear complete
+There are two ways we can fill in the details
 
 ##
 
-<div class="demo" id="examples-collection-remove-complete"></div>
--->
+1. We can maintain a full model of the items
+
+##
+
+```haskell
+data TodoItem =
+  TodoItem {
+    itemComplete :: Bool
+  , itemText     :: Text
+  }
+```
+
+##
+
+```haskell
+todoItem :: ReflexM m 
+         => Event Bool 
+         -> Event () 
+         -> Dynamic TodoItem 
+         -> m (Event (TodoItem -> TodoItem), Event ())
+```
+
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int TodoItem)
 
 
 
+
+
+
+
+
+
+     
+     
+     
+     
+      
+      
+      
+    ...
+```
+
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int TodoItem)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd'
+        
+        
+      ]
+
+
+
+
+     
+     
+     
+     
+      
+      
+      
+    ...
+```
+
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int TodoItem)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd'
+        
+        
+      ]
+
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv
+
+     
+     
+     
+     
+      
+      
+      
+    ...
+```
+
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int TodoItem)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd'
+        
+        
+      ]
+
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv
+
+    let
+      eChanges = combineEvents fst dmList
+      eRemoves = combineEvents snd dmList
+      
+      
+      
+      
+    ...
+```
+
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int TodoItem)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd'
+      , updateKeys <$> eChanges
+      , removeKeys <$> eRemoves
+      ]
+
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv
+
+    let
+      eChanges = combineEvents fst dmList
+      eRemoves = combineEvents snd dmList
+      
+      
+      
+      
+    ...
+```
+
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int TodoItem)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd'
+      , updateKeys <$> eChanges
+      , removeKeys <$> eRemoves
+      ]
+
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv
+
+    let
+      eChanges = combineEvents fst dmList
+      eRemoves = combineEvents snd dmList
+
+      dmCompletes  = fmap itemComplete dModel
+      dAllComplete = fmap and          dmCompletes
+      dAnyComplete = fmap or           dmCompletes
+    ...
+```
+
+##
+
+2. We can internalize as much state as we can
+
+##
+
+```haskell
+todoItem :: ReflexM m 
+         => Event Bool 
+         -> Event () 
+         -> Dynamic Text 
+         -> m (Dynamic Bool, Event ())
+```
+
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int Text)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ...
+```
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int Text)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd
+
+      ]
+
+
+
+
+
+
+
+
+
+
+    ...
+```
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int Text)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd
+
+      ]
+
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv
+
+
+
+
+
+
+
+    ...
+```
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int Text)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd
+
+      ]
+
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv
+
+    let
+      dmCompletes = combineDynamic fst dmList
+      eRemoves    = combineEvent   snd dmList
+
+
+
+    ...
+```
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int Text)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd
+      , removeKeys <$> eRemoves
+      ]
+
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv
+
+    let
+      dmCompletes = combineDynamic fst dmList
+      eRemoves    = combineEvent   snd dmList
+
+
+
+    ...
+```
+##
+
+```haskell
+todoList :: ReflexM m 
+         => m ()
+todoList = 
+    ... -- dModel :: Dynamic (Map Int Text)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        Map.insert <$> current dCount <@> eAdd
+      , removeKeys <$> eRemoves
+      ]
+
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv
+
+    let
+      dmCompletes = combineDynamic fst dmList
+      eRemoves    = combineEvent   snd dmList
+
+      dAllComplete = fmap and dmCompletes
+      dAnyComplete = fmap or  dmCompletes
+    ...
+```
+
+##
+
+<div class="demo" id="examples-list-2"></div>

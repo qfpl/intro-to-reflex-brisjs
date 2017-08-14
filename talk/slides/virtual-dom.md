@@ -11,7 +11,7 @@ Working with the DOM directly can be slow
 
 ##
 
-The virtual DOM is a data type that models the DOM, allow with efficienct diff and patch operations
+The virtual DOM is a data type that models the DOM, allow with efficient diff and patch operations
 
 ##
 

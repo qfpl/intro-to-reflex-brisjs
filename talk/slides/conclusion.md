@@ -15,4 +15,8 @@ The `sodium` library is worth looking at as well
 
 ##
 
-Data61 do free, 3 day, courses on Haskell if you're keen to learn more about that
+Data61 do free 3 day courses on Haskell if you're keen to learn more about that
+
+##
+
+I'm happy to answer questions or help out with `reflex` or with `sodium`, so track me down if you're interested in this stuff
