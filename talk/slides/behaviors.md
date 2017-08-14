@@ -25,8 +25,8 @@ time -> a
 
 ```haskell
 hold :: ReflexM m 
-     => a
-     -> Event a
+     =>             a
+     ->       Event a
      -> m (Behavior a)
 ```
 
@@ -66,8 +66,8 @@ sampleBlue eInput         = do
 
 ```haskell
 tag :: Behavior a
-    -> Event  b
-    -> Event  a
+    -> Event    b
+    -> Event    a
 ```
 
 ##

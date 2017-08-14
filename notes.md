@@ -2,21 +2,13 @@ Strip out all of the typeclass constraints
 
 events.md
 - the frames / transactions point can be pushed a bit harder
-
 behaviors.md
 - mention the CQRS link
-
-dynamic.md
-  important to really stress that dyanmic used well can give you virtual dom equivalent behavior without having to diff or patch
 
 dom.md
 
 switching.md
-
-  Possibly put some of this before the dom and some of it after
-
   Need to really trim down the switching
-    basic example of switching, like a railway switchyard
     show widgetHold for switching out pieces of the DOM
     - with text and a button
     - with text and a timer

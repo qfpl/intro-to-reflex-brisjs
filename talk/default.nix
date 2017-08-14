@@ -37,6 +37,7 @@ in
           $src/slides/events.md \
           $src/slides/behaviors.md \
           $src/slides/dynamics.md \
+          $src/slides/higher-order.md \
           $src/slides/dom.md \
           $src/slides/switching.md \
           $src/slides/components.md \

@@ -1,3 +1,3 @@
-% Reflex: Front-end development done awesome
+% Reflex: Higher order FRP for front-end development
 % Dave Laing
 

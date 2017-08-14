@@ -87,7 +87,7 @@ dynText :: ReflexM m
 ##
 
 ```haskell
-el "div" $ mdo
+el "div" $ do
 
 
 
@@ -102,7 +102,7 @@ el "div" $ mdo
 ##
 
 ```haskell
-el "div" $ mdo
+el "div" $ do
 
 
 
@@ -117,7 +117,7 @@ el "div" $ mdo
 ##
 
 ```haskell
-el "div" $ mdo
+el "div" $ do
   el "div" $ 
     dynText dLabel
 
@@ -132,7 +132,7 @@ el "div" $ mdo
 ##
 
 ```haskell
-el "div" $ mdo
+el "div" $ do
   el "div" $ 
     dynText dLabel
 
@@ -193,27 +193,7 @@ todoItem :: ReflexM m
          => Text 
          -> m (Event ())
 todoItem placeholder =
-  el      "div"             $  do
-
-    el         "div"              $
-      text placeholder
-
-    eRemove <- button "Remove"
-
-
-
-
-    pure eRemove
-```
-
-##
-
-```haskell
-todoItem :: ReflexM
-         => Text 
-         -> m (Event ())
-todoItem placeholder =
-  elClass "div"             $  do
+  el      "div"             $ do
 
     el         "div"              $
       text placeholder
@@ -233,7 +213,7 @@ todoItem :: ReflexM m
          => Text 
          -> m (Event ())
 todoItem placeholder =
-  elClass "div" "todo-item" $  do
+  elClass "div"             $ do
 
     el         "div"              $
       text placeholder
@@ -253,7 +233,27 @@ todoItem :: ReflexM m
          => Text 
          -> m (Event ())
 todoItem placeholder =
-  elClass "div" "todo-item" $  do
+  elClass "div" "todo-item" $ do
+
+    el         "div"              $
+      text placeholder
+
+    eRemove <- button "Remove"
+
+
+
+
+    pure eRemove
+```
+
+##
+
+```haskell
+todoItem :: ReflexM m
+         => Text 
+         -> m (Event ())
+todoItem placeholder =
+  elClass "div" "todo-item" $ do
 
     el         "div"              $
       text placeholder
@@ -273,27 +273,7 @@ todoItem :: ReflexM m
          => Text 
          -> m (Event ())
 todoItem placeholder =
-  elClass "div" "todo-item" $ mdo
-
-    el         "div"              $
-      text placeholder
-
-    eRemove <- button "Remove"
-
-    dRemoveClass <- holdDyn "" $
-      "removed" <$ eRemove
-
-    pure eRemove
-```
-
-##
-
-```haskell
-todoItem :: ReflexM m
-         => Text 
-         -> m (Event ())
-todoItem placeholder =
-  elClass "div" "todo-item" $ mdo
+  elClass "div" "todo-item" $ do
 
     elDynClass "div" dRemoveClass $
       text placeholder
@@ -313,7 +293,7 @@ todoItem :: ReflexM m
          => Text 
          -> m (Event ())
 todoItem placeholder =
-  elClass "div" "todo-item" $ mdo
+  elClass "div" "todo-item" $ do
 
     elDynClass "div" dRemoveClass $
       text placeholder
@@ -333,8 +313,8 @@ todoItem placeholder =
 ```haskell
 data CheckboxConfig = 
   CheckboxConfig { 
-      _checkboxConfig_setValue   :: Event   Bool
-    , _checkboxConfig_attributes :: Dynamic (Map Text Text)
+      checkboxConfig_setValue   :: Event   Bool
+    , checkboxConfig_attributes :: Dynamic (Map Text Text)
     }
 ```
 
@@ -347,17 +327,17 @@ instance Default CheckboxConfig where ...
 ```haskell
 checkbox :: (...) 
          => Bool 
-         -> CheckboxConfig t 
-         -> m (Checkbox t)
+         -> CheckboxConfig
+         -> m Checkbox
 ```
 
 ## 
 
 ```haskell
-data Checkbox t = 
+data Checkbox = 
   Checkbox { 
-     _checkbox_value  :: Dynamic t Bool
-   , _checkbox_change :: Event   t Bool
+     checkbox_value  :: Dynamic Bool
+   , checkbox_change :: Event   Bool
    }
 ```
 
@@ -366,28 +346,24 @@ data Checkbox t =
 ```haskell
 data TodoItemConfig =
   TodoItemConfig {
-    _todoItemConfig_dText :: Dynamic Text
+    todoItemConfig_dText :: Dynamic Text
   }
-
-makeLenses ''TodoItemConfig
 
 data TodoItem =
   TodoItem {
-    _todoItem_dComplete :: Dynamic Bool
-  , _todoItem_eRemove   :: Event   ()
+    todoItem_dComplete :: Dynamic Bool
+  , todoItem_eRemove   :: Event   ()
   }
-
-makeLenses ''TodoItem
 ```
 
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => TodoItemConfig 
-         -> m (TodoItem t)
+         -> m TodoItem
 todoItem (TodoItemConfig dText) =
-  elClass "div" "todo-item" $ mdo
+  elClass "div" "todo-item" $ do
   
   
   
@@ -406,11 +382,11 @@ todoItem (TodoItemConfig dText) =
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => TodoItemConfig 
-         -> m (TodoItem t)
+         -> m TodoItem
 todoItem (TodoItemConfig dText) =
-  elClass "div" "todo-item" $ mdo
+  elClass "div" "todo-item" $ do
     cb <- checkbox False def
   
   
@@ -429,11 +405,11 @@ todoItem (TodoItemConfig dText) =
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => TodoItemConfig 
-         -> m (TodoItem t)
+         -> m TodoItem
 todoItem (TodoItemConfig dText) =
-  elClass "div" "todo-item" $ mdo
+  elClass "div" "todo-item" $ do
     cb <- checkbox False def
     let
       dComplete = cb ^. checkbox_value
@@ -452,11 +428,11 @@ todoItem (TodoItemConfig dText) =
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => TodoItemConfig 
-         -> m (TodoItem t)
+         -> m TodoItem
 todoItem (TodoItemConfig dText) =
-  elClass "div" "todo-item" $ mdo
+  elClass "div" "todo-item" $ do
     cb <- checkbox False def
     let
       dComplete = cb ^. checkbox_value
@@ -475,11 +451,11 @@ todoItem (TodoItemConfig dText) =
 ##
 
 ```haskell
-todoItem :: MonadWidget t m 
+todoItem :: ReflexM m
          => TodoItemConfig 
-         -> m (TodoItem t)
+         -> m TodoItem
 todoItem (TodoItemConfig dText) =
-  elClass "div" "todo-item" $ mdo
+  elClass "div" "todo-item" $ do
     cb <- checkbox False def
     let
       dComplete = cb ^. checkbox_value
@@ -587,51 +563,50 @@ todoItem (TodoItemConfig dText) =
 ##
 
 ```haskell
-data TextInputConfig t = 
+data TextInputConfig = 
   TextInputConfig { 
-      _textInputConfig_inputType    :: Text
-    , _textInputConfig_initialValue :: Text
-    , _textInputConfig_setValue     :: Event t Text
-    , _textInputConfig_attributes   :: 
-        Dynamic t (Map Text Text)
+      textInputConfig_inputType    :: Text
+    , textInputConfig_initialValue :: Text
+    , textInputConfig_setValue     :: Event  Text
+    , textInputConfig_attributes   :: 
+        Dynamic (Map Text Text)
     }
 ```
 
 ```haskell
-instance Reflex t => Default (TextInputConfig t) where ...
+instance Default TextInputConfig where ...
 ```
 
 ##
 
 ```haskell
-textInput :: (...) 
-          => TextInputConfig t 
-          -> m (TextInput t)
+textInput :: ReflexM m
+          => TextInputConfig
+          -> m TextInput
 ```
 
 ## 
 
 ```haskell
-data TextInput t = 
+data TextInput = 
   TextInput { 
-      _textInput_value          :: Dynamic t Text
-    , _textInput_input          :: Event t Text
-    , _textInput_keypress       :: Event t Word
-    , _textInput_keydown        :: Event t Word
-    , _textInput_keyup          :: Event t Word
-    , _textInput_hasFocus       :: Dynamic t Bool
-    , _textInput_builderElement :: 
-        InputElement EventResult GhcjsDomSpace t
+      textInput_value          :: Dynamic Text
+    , textInput_input          :: Event Text
+    , textInput_keypress       :: Event Word
+    , textInput_keydown        :: Event Word
+    , textInput_keyup          :: Event Word
+    , textInput_hasFocus       :: Dynamic Bool
+    , textInput_builderElement :: 
+        InputElement EventResult GhcjsDomSpace
     }
 ```
 
 ## 
 
 ```haskell
-addItem ::
-  MonadWidget t m =>
-  m (Event t Text)
-addItem =  do
+addItem :: ReflexM m 
+        => m (Event Text)
+addItem = do
   ti <- textInput $
     def                                                      
 
@@ -649,10 +624,9 @@ addItem =  do
 ## 
 
 ```haskell
-addItem ::
-  MonadWidget t m =>
-  m (Event t Text)
-addItem =  do
+addItem :: ReflexM m 
+        => m (Event Text)
+addItem = do
   ti <- textInput $
     def & textInputConfig_attributes .~
             pure ("placeholder" =: "What shall we do today?")
@@ -670,10 +644,9 @@ addItem =  do
 ## 
 
 ```haskell
-addItem ::
-  MonadWidget t m =>
-  m (Event t Text)
-addItem =  do
+addItem :: ReflexM m 
+        => m (Event Text)
+addItem = do
   ti <- textInput $
     def & textInputConfig_attributes .~
             pure ("placeholder" =: "What shall we do today?")
@@ -681,7 +654,7 @@ addItem =  do
 
 
   let
-    bValue = current $ ti ^. textInput_value
+    bValue   = current $ ti ^. textInput_value
 
 
 
@@ -691,10 +664,9 @@ addItem =  do
 ## 
 
 ```haskell
-addItem ::
-  MonadWidget t m =>
-  m (Event t Text)
-addItem =  do
+addItem :: ReflexM m 
+        => m (Event Text)
+addItem = do
   ti <- textInput $
     def & textInputConfig_attributes .~
             pure ("placeholder" =: "What shall we do today?")
@@ -702,7 +674,7 @@ addItem =  do
 
 
   let
-    bValue = current $ ti ^. textInput_value
+    bValue   = current $ ti ^. textInput_value
     eAtEnter = bValue <@ getKey ti Enter
 
 
@@ -713,10 +685,9 @@ addItem =  do
 ## 
 
 ```haskell
-addItem ::
-  MonadWidget t m =>
-  m (Event t Text)
-addItem =  do
+addItem :: ReflexM m 
+        => m (Event Text)
+addItem = do
   ti <- textInput $
     def & textInputConfig_attributes .~
             pure ("placeholder" =: "What shall we do today?")
@@ -724,9 +695,9 @@ addItem =  do
 
 
   let
-    bValue = current $ ti ^. textInput_value
+    bValue   = current $ ti ^. textInput_value
     eAtEnter = bValue <@ getKey ti Enter
-    eDone = ffilter (not . Text.null) eAtEnter
+    eDone    = ffilter (not . Text.null) eAtEnter
 
   
 ```
@@ -734,10 +705,9 @@ addItem =  do
 ## 
 
 ```haskell
-addItem ::
-  MonadWidget t m =>
-  m (Event t Text)
-addItem =  do
+addItem :: ReflexM m 
+        => m (Event Text)
+addItem = do
   ti <- textInput $
     def & textInputConfig_attributes .~
             pure ("placeholder" =: "What shall we do today?")
@@ -745,9 +715,9 @@ addItem =  do
 
 
   let
-    bValue = current $ ti ^. textInput_value
+    bValue   = current $ ti ^. textInput_value
     eAtEnter = bValue <@ getKey ti Enter
-    eDone = ffilter (not . Text.null) eAtEnter
+    eDone    = ffilter (not . Text.null) eAtEnter
 
   pure eDone
 ```
@@ -755,10 +725,9 @@ addItem =  do
 ## 
 
 ```haskell
-addItem ::
-  MonadWidget t m =>
-  m (Event t Text)
-addItem =  do
+addItem :: ReflexM m 
+        => m (Event Text)
+addItem = do
   ti <- textInput $
     def & textInputConfig_attributes .~
             pure ("placeholder" =: "What shall we do today?")
@@ -766,9 +735,9 @@ addItem =  do
             ("" <$ eDone)
 
   let
-    bValue = current $ ti ^. textInput_value
+    bValue   = current $ ti ^. textInput_value
     eAtEnter = bValue <@ getKey ti Enter
-    eDone = ffilter (not . Text.null) eAtEnter
+    eDone    = ffilter (not . Text.null) eAtEnter
 
   pure eDone
 ```
@@ -776,10 +745,9 @@ addItem =  do
 ## 
 
 ```haskell
-addItem ::
-  MonadWidget t m =>
-  m (Event t Text)
-addItem = mdo
+addItem :: ReflexM m 
+        => m (Event Text)
+addItem = do
   ti <- textInput $
     def & textInputConfig_attributes .~
             pure ("placeholder" =: "What shall we do today?")
@@ -787,30 +755,9 @@ addItem = mdo
             ("" <$ eDone)
 
   let
-    bValue = current $ ti ^. textInput_value
+    bValue   = current $ ti ^. textInput_value
     eAtEnter = bValue <@ getKey ti Enter
-    eDone = ffilter (not . Text.null) eAtEnter
-
-  pure eDone
-```
-
-## 
-
-```haskell
-addItem ::
-  MonadWidget t m =>
-  m (Event t Text)
-addItem = mdo
-  ti <- textInput $
-    def & textInputConfig_attributes .~
-            pure ("placeholder" =: "What shall we do today?")
-        & textInputConfig_setValue .~
-            ("" <$ eDone)
-
-  let
-    bValue = current $ ti ^. textInput_value
-    eAtEnter = bValue <@ getKey ti Enter
-    eDone = ffilter (not . Text.null) eAtEnter
+    eDone    = ffilter (not . Text.null) eAtEnter
 
   pure eDone
 ```

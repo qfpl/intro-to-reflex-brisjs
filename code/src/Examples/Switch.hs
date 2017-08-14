@@ -36,6 +36,13 @@ attachSwitchExamples = do
   attachId_ "examples-switch-colour-2" $
     switchColourExample switchColour2
 
+  attachId_ "examples-switch-demo-text" $
+    demoText
+  attachId_ "examples-switch-demo-button" $
+    demoButton
+  attachId_ "examples-switch-demo-tick" $
+    demoTick
+
   attachId_ "examples-switch-hide-button" $
     hideExample buttonWidget
   attachId_ "examples-switch-hold-button" $
@@ -142,6 +149,33 @@ tickWidget = do
   el "div" $ text "Ticking..."
   pure $ (Text.pack . show . _tickInfo_n) <$> eTick
 
+demoText ::
+  MonadWidget t m =>
+  m ()
+demoText = do
+  eText <- textWidget
+  dText <- holdDyn "" eText
+  el "div" $
+    dynText dText
+
+demoButton ::
+  MonadWidget t m =>
+  m ()
+demoButton = do
+  eText <- buttonWidget
+  dText <- holdDyn "" eText
+  el "div" $
+    dynText dText
+
+demoTick ::
+  MonadWidget t m =>
+  m ()
+demoTick = do
+  eText <- tickWidget
+  dText <- holdDyn "" eText
+  el "div" $
+    dynText dText
+
 hideExample ::
   MonadWidget t m =>
   m (Event t Text) ->
@@ -151,14 +185,18 @@ hideExample w = elClass "div" "widget-hold-wrapper" $ mdo
     mkHidden False = "hide"
     mkHidden True  = ""
 
-    dHide1 = mkHidden         <$> dToggle
+    dHide1 =  mkHidden        <$> dToggle
     dHide2 = (mkHidden . not) <$> dToggle
 
-  eText1 <- elDynClass "div" dHide1 textWidget
-  eText2 <- elDynClass "div" dHide2 w
+  eText1 <- elDynClass "div" dHide1 $
+    textWidget
+
+  eText2 <- elDynClass "div" dHide2 $
+    w
 
   eSwitch <- el "div" $
     button "Switch"
+
   dToggle <- toggle True eSwitch
 
   let
