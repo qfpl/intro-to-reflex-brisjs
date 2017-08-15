@@ -77,7 +77,7 @@ There are going to be some common elements in how we approach this
 
     -- dModel :: Dynamic (Map Int ?)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd
+        attachWith Map.insert (current dCount) eAdd
       , removeKeys <$> eRemoves -- ?
       ]
 
@@ -102,42 +102,16 @@ There are going to be some common elements in how we approach this
 
     -- dModel :: Dynamic (Map Int ?)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd
-      , removeKeys <$> eRemoves -- ?
-      ]
-
-    dmList <- el "ul" . list dModel $ \dv ->
-      todoItem eMarkAllComplete eClearComplete dv -- ?
-
-
-
-
-
-
-
-
-  
-```
-
-##
-
-```haskell
-  elClass "div" "todo-list" $ do
-    eAdd   <- addItem
-    dCount <- count eAdd
-
-    -- dModel :: Dynamic (Map Int ?)
-    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd
+        attachWith Map.insert (current dCount) eAdd
       , removeKeys <$> eRemoves -- ?
       ]
 
     dmList <- el "ul" . list dModel $ \dv ->
       todoItem eMarkAllComplete eClearComplete dv -- ?
 
-    let
-      dAllComplete = fmap and dmCompletes -- ?
-      dAnyComplete = fmap or  dmCompletes -- ?
+
+
+
 
 
 
@@ -154,7 +128,7 @@ There are going to be some common elements in how we approach this
 
     -- dModel :: Dynamic (Map Int ?)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd
+        attachWith Map.insert (current dCount) eAdd
       , removeKeys <$> eRemoves -- ?
       ]
 
@@ -165,8 +139,8 @@ There are going to be some common elements in how we approach this
       dAllComplete = fmap and dmCompletes -- ?
       dAnyComplete = fmap or  dmCompletes -- ?
 
-    eMarkAllComplete <- markAllComplete dAllComplete
-    eClearComplete   <- clearComplete   dAnyComplete
+
+
 
   
 ```
@@ -180,7 +154,7 @@ There are going to be some common elements in how we approach this
 
     -- dModel :: Dynamic (Map Int ?)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd
+        attachWith Map.insert (current dCount) eAdd
       , removeKeys <$> eRemoves -- ?
       ]
 
@@ -194,7 +168,33 @@ There are going to be some common elements in how we approach this
     eMarkAllComplete <- markAllComplete dAllComplete
     eClearComplete   <- clearComplete   dAnyComplete
 
-    pure ()
+  
+```
+
+##
+
+```haskell
+  elClass "div" "todo-list" $ do
+    eAdd   <- addItem
+    dCount <- count eAdd
+
+    -- dModel :: Dynamic (Map Int ?)
+    dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
+        attachWith Map.insert (current dCount) eAdd
+      , removeKeys <$> eRemoves -- ?
+      ]
+
+    dmList <- el "ul" . list dModel $ \dv ->
+      todoItem eMarkAllComplete eClearComplete dv -- ?
+
+    let
+      dAllComplete = fmap and dmCompletes -- ?
+      dAnyComplete = fmap or  dmCompletes -- ?
+
+    eMarkAllComplete <- markAllComplete dAllComplete
+    eClearComplete   <- clearComplete   dAnyComplete
+
+    return ()
 ```
 
 ##
@@ -203,7 +203,7 @@ There are two ways we can fill in the details
 
 ##
 
-1. We can maintain a full model of the items
+Option 1: Model all the things
 
 ##
 
@@ -259,7 +259,7 @@ todoList :: ReflexM m
 todoList = 
     ... -- dModel :: Dynamic (Map Int TodoItem)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd'
+        attachWith Map.insert (current dCount) eAdd'
         
         
       ]
@@ -285,7 +285,7 @@ todoList :: ReflexM m
 todoList = 
     ... -- dModel :: Dynamic (Map Int TodoItem)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd'
+        attachWith Map.insert (current dCount) eAdd'
         
         
       ]
@@ -311,7 +311,7 @@ todoList :: ReflexM m
 todoList = 
     ... -- dModel :: Dynamic (Map Int TodoItem)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd'
+        attachWith Map.insert (current dCount) eAdd'
         
         
       ]
@@ -337,7 +337,7 @@ todoList :: ReflexM m
 todoList = 
     ... -- dModel :: Dynamic (Map Int TodoItem)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd'
+        attachWith Map.insert (current dCount) eAdd'
       , updateKeys <$> eChanges
       , removeKeys <$> eRemoves
       ]
@@ -363,7 +363,7 @@ todoList :: ReflexM m
 todoList = 
     ... -- dModel :: Dynamic (Map Int TodoItem)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd'
+        attachWith Map.insert (current dCount) eAdd'
       , updateKeys <$> eChanges
       , removeKeys <$> eRemoves
       ]
@@ -383,7 +383,15 @@ todoList =
 
 ##
 
-2. We can internalize as much state as we can
+That's fine if something else in our program needs access to the model
+
+##
+
+If that's not the case, we're exposing and tracking a lot of state that we're not going to use
+
+##
+
+Option 2: internalize as much state as we can
 
 ##
 
@@ -426,7 +434,7 @@ todoList :: ReflexM m
 todoList = 
     ... -- dModel :: Dynamic (Map Int Text)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd
+        attachWith Map.insert (current dCount) eAdd
 
       ]
 
@@ -449,7 +457,7 @@ todoList :: ReflexM m
 todoList = 
     ... -- dModel :: Dynamic (Map Int Text)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd
+        attachWith Map.insert (current dCount) eAdd
 
       ]
 
@@ -472,7 +480,7 @@ todoList :: ReflexM m
 todoList = 
     ... -- dModel :: Dynamic (Map Int Text)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd
+        attachWith Map.insert (current dCount) eAdd
 
       ]
 
@@ -495,7 +503,7 @@ todoList :: ReflexM m
 todoList = 
     ... -- dModel :: Dynamic (Map Int Text)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd
+        attachWith Map.insert (current dCount) eAdd
       , removeKeys <$> eRemoves
       ]
 
@@ -518,7 +526,7 @@ todoList :: ReflexM m
 todoList = 
     ... -- dModel :: Dynamic (Map Int Text)
     dModel <- foldDyn ($) Map.empty . mergeWith (.) $ [
-        Map.insert <$> current dCount <@> eAdd
+        attachWith Map.insert (current dCount) eAdd
       , removeKeys <$> eRemoves
       ]
 

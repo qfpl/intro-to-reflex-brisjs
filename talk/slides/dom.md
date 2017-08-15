@@ -67,10 +67,10 @@ button :: ReflexM m
 todoItem :: ReflexM m
          => Text 
          -> m (Event ())
-todoItem placeholder =
+todoItem label =
   el "div" $ do
     el "div" $ 
-      text placeholder
+      text label
     button "Remove"
 ```
 
@@ -96,7 +96,7 @@ el "div" $ do
 
 
 
-  pure ()
+  return ()
 ```
 
 ##
@@ -111,22 +111,7 @@ el "div" $ do
   dLabel <- holdDyn "" $ 
     "Removed:" <$ eRemove
 
-  pure ()
-```
-
-##
-
-```haskell
-el "div" $ do
-  el "div" $ 
-    dynText dLabel
-
-  eRemove <- todoItem "TODO"
-
-  dLabel <- holdDyn "" $ 
-    "Removed:" <$ eRemove
-
-  pure ()
+  return ()
 ```
 
 ##
@@ -141,7 +126,22 @@ el "div" $ do
   dLabel <- holdDyn "" $ 
     "Removed:" <$ eRemove
 
-  pure ()
+  return ()
+```
+
+##
+
+```haskell
+el "div" $ do
+  el "div" $ 
+    dynText dLabel
+
+  eRemove <- todoItem "TODO"
+
+  dLabel <- holdDyn "" $ 
+    "Removed:" <$ eRemove
+
+  return ()
 ```
 
 <div class="demo" id="examples-dom-todoitem-2"></div>
@@ -203,7 +203,7 @@ todoItem placeholder =
 
 
 
-    pure eRemove
+    return eRemove
 ```
 
 ##
@@ -223,7 +223,7 @@ todoItem placeholder =
 
 
 
-    pure eRemove
+    return eRemove
 ```
 
 ##
@@ -243,7 +243,7 @@ todoItem placeholder =
 
 
 
-    pure eRemove
+    return eRemove
 ```
 
 ##
@@ -263,7 +263,7 @@ todoItem placeholder =
     dRemoveClass <- holdDyn "" $
       "removed" <$ eRemove
 
-    pure eRemove
+    return eRemove
 ```
 
 ##
@@ -283,7 +283,7 @@ todoItem placeholder =
     dRemoveClass <- holdDyn "" $
       "removed" <$ eRemove
 
-    pure eRemove
+    return eRemove
 ```
 
 ##
@@ -303,7 +303,7 @@ todoItem placeholder =
     dRemoveClass <- holdDyn "" $
       "removed" <$ eRemove
 
-    pure eRemove
+    return eRemove
 ```
 
 <div class="demo" id="examples-dom-todoitem-3"></div>
@@ -375,7 +375,7 @@ todoItem (TodoItemConfig dText) =
     dRemoveClass <- holdDyn "" $ 
       "removed" <$ eRemove
 
-    pure $ 
+    return $ 
       TodoItem           eRemove
 ```
 
@@ -398,7 +398,7 @@ todoItem (TodoItemConfig dText) =
     dRemoveClass <- holdDyn "" $ 
       "removed" <$ eRemove
 
-    pure $ 
+    return $ 
       TodoItem           eRemove
 ```
 
@@ -421,7 +421,7 @@ todoItem (TodoItemConfig dText) =
     dRemoveClass <- holdDyn "" $ 
       "removed" <$ eRemove
 
-    pure $ 
+    return $ 
       TodoItem           eRemove
 ```
 
@@ -444,7 +444,7 @@ todoItem (TodoItemConfig dText) =
     dRemoveClass <- holdDyn "" $ 
       "removed" <$ eRemove
 
-    pure $ 
+    return $ 
       TodoItem dComplete eRemove
 ```
 
@@ -467,7 +467,7 @@ todoItem (TodoItemConfig dText) =
     dRemoveClass <- holdDyn "" $ 
       "removed" <$ eRemove
 
-    pure $ 
+    return $ 
       TodoItem dComplete eRemove
 ```
 
@@ -675,7 +675,7 @@ addItem = do
 
   let
     bValue   = current $ ti ^. textInput_value
-    eAtEnter = bValue <@ getKey ti Enter
+    eAtEnter = tag bValue (getKey ti Enter)
 
 
   
@@ -696,7 +696,7 @@ addItem = do
 
   let
     bValue   = current $ ti ^. textInput_value
-    eAtEnter = bValue <@ getKey ti Enter
+    eAtEnter = tag bValue (getKey ti Enter)
     eDone    = ffilter (not . Text.null) eAtEnter
 
   
@@ -716,10 +716,10 @@ addItem = do
 
   let
     bValue   = current $ ti ^. textInput_value
-    eAtEnter = bValue <@ getKey ti Enter
+    eAtEnter = tag bValue (getKey ti Enter)
     eDone    = ffilter (not . Text.null) eAtEnter
 
-  pure eDone
+  return eDone
 ```
 
 ## 
@@ -736,10 +736,10 @@ addItem = do
 
   let
     bValue   = current $ ti ^. textInput_value
-    eAtEnter = bValue <@ getKey ti Enter
+    eAtEnter = tag bValue (getKey ti Enter)
     eDone    = ffilter (not . Text.null) eAtEnter
 
-  pure eDone
+  return eDone
 ```
 
 ## 
@@ -756,10 +756,10 @@ addItem = do
 
   let
     bValue   = current $ ti ^. textInput_value
-    eAtEnter = bValue <@ getKey ti Enter
+    eAtEnter = tag bValue (getKey ti Enter)
     eDone    = ffilter (not . Text.null) eAtEnter
 
-  pure eDone
+  return eDone
 ```
 
 <div class="demo" id="examples-dom-todoitem-6"></div>

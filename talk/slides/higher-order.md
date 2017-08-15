@@ -246,7 +246,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
 
   let eOut2 = _
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -271,7 +271,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
 
   let eOut2 = _
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -296,7 +296,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
 
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -321,7 +321,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
 
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -346,7 +346,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
 
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -371,7 +371,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
 
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -396,7 +396,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -421,7 +421,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -446,7 +446,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -471,7 +471,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -496,7 +496,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -521,7 +521,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -546,7 +546,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -571,7 +571,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -596,7 +596,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -621,7 +621,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -646,7 +646,7 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
   let eOut2 = switch bOut2
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
 
 ##
@@ -671,5 +671,5 @@ switchColour eSwitch1 eSwitch2 eInput = do
     ]
 
 
-  pure (eOut1, eOut2)
+  return (eOut1, eOut2)
 ```
