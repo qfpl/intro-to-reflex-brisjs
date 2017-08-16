@@ -35,12 +35,12 @@ $for(css)$
   <link rel="stylesheet" href="$css$"/>
 $endfor$
 <link rel="stylesheet" href="css/tweak.css">
-<link rel="stylesheet" href="$codedir$/css/grid-dark.css">
-<link rel="stylesheet" href="$codedir$/css/fizzbuzz.css">
-<link rel="stylesheet" href="$codedir$/css/switch.css">
-<link rel="stylesheet" href="$codedir$/css/todo.css">
-  <script language="javascript" src="$codedir$/js/rx.all.min.js"></script>
-  <script language="javascript" src="$codedir$/js/examples.min.js"></script>
+<link rel="stylesheet" href="css/grid-dark.css">
+<link rel="stylesheet" href="css/fizzbuzz.css">
+<link rel="stylesheet" href="css/switch.css">
+<link rel="stylesheet" href="css/todo.css">
+  <script language="javascript" src="js/rx.all.min.js"></script>
+  <script language="javascript" src="js/examples.min.js"></script>
   <!-- Printing and PDF exports -->
   <script>
     var link = document.createElement( 'link' );
@@ -245,7 +245,7 @@ $endif$
         ]
       });
     </script>
-    <script language="javascript" src="$codedir$/js/rx-example.js"></script>
+    <script language="javascript" src="js/rx-example.js"></script>
   $for(include-after)$
   $include-after$
   $endfor$
