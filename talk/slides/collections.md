@@ -375,7 +375,7 @@ todoList =
       eChanges = combineEvents fst dmList
       eRemoves = combineEvents snd dmList
 
-      dmCompletes  = fmap itemComplete dModel
+      dmCompletes  = fmap itemComplete <$> dModel
       dAllComplete = fmap and          dmCompletes
       dAnyComplete = fmap or           dmCompletes
     ...
